@@ -33,13 +33,6 @@ public class AutoSubsystem extends SubsystemBase {
         Command command = mapper.readValue(file.toFile(), SequentialCommandGroup.class);
         AutoChooser.addOption(file.getFileName().toString(), command);
       }
-    }
-  }
-
-  @Override
-  public void register() {
-    try {
-      sellector();
     } catch (IOException e) {
       e.printStackTrace();
     }
