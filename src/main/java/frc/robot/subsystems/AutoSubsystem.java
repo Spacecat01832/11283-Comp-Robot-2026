@@ -25,7 +25,8 @@ public class AutoSubsystem extends SubsystemBase {
   public AutoSubsystem() {
   }
 
-  public void sellector() throws IOException {
+  @Override
+  public void register() {
     AutoChooser.setDefaultOption("Choose", null);
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(folder)) {
