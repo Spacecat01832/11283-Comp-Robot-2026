@@ -4,10 +4,14 @@
 
 package frc.robot;
 
-public final class Constants
-{
-  public static class OperatorConstants
-  {
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+
+public final class Constants {
+  public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+  }
+
+  public static class PneumaticConstants {
+    public static final PneumaticsModuleType kPneumaticsModuleType = PneumaticsModuleType.REVPH;
   }
 }
