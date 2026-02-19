@@ -29,10 +29,7 @@ public class AutoSubsystem extends SubsystemBase {
     AutoChooser.setDefaultOption("None", null);
     // Discover and add auto commands from the package
     discoverAndAddAutos(AUTO_PACKAGE);
-  }
-
-  @Override
-  public void periodic() {
+    // putting it on smartdashboard
     SmartDashboard.putData("AutoChooser", AutoChooser);
   }
 
