@@ -9,12 +9,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.*;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.Auto.AutoSubsystem;
 
 public class RobotContainer {
 
   private final AutoSubsystem auto = new AutoSubsystem();
 
-  final CommandXboxController driverXbox = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  public final TurretSubsystem turret = new TurretSubsystem();
+  public final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
+  public final ClimberSubsystem climber = new ClimberSubsystem();
+
+  final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   
   public RobotContainer() {
     configureBindings();
