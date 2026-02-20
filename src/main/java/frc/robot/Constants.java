@@ -39,7 +39,7 @@ public final class Constants {
         new TrapezoidProfile.Constraints(0.5, 0.1));
     public static double kPidMax = 0,
         kPidMin = 0,
-        kConvertion = 3;
+        kConvertion = 1; // TODO need corect convertion
   }
 
   public static class ClimberConstants {
@@ -53,13 +53,14 @@ public final class Constants {
         1.2,
         1.3);
     public ProfiledPIDController kRollPid = new ProfiledPIDController(
-      0.2, 
-      0.005, 
-      0.1, 
-      new TrapezoidProfile.Constraints(0.5, 0.2));
+        0.2,
+        0.005,
+        0.1,
+        new TrapezoidProfile.Constraints(0.5, 0.2));
     public static double kAltPidMax = 0,
         kAltPidMin = 0,
-        kConvertion = 3;
+        kAltConvertion = 1, // TODO need corect convertion
+        kRollConvertion = 1; // TODO need corect convertion
   }
 }
 /*

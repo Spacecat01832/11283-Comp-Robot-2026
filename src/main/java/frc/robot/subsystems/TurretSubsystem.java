@@ -32,8 +32,8 @@ public class TurretSubsystem extends SubsystemBase {
     yawPid.calculate(yawMotor.getEncoder().getPosition());
   }
 
-  public void setYawGoal(double setpoint){
-    yawPid.setGoal(setpoint);
+  public void setYawGoal(double degrees){
+    yawPid.setGoal(degrees/TurretConstants.kConvertion);
   }
 
   public void Shooter(double topSpeed, double bottomSpeed) {

@@ -52,12 +52,12 @@ public class ClimberSubsystem extends SubsystemBase {
             rollMotor.getEncoder().getPosition()));
   }
 
-  public void setAltGoal(double setpoint) {
-    elePid.setGoal(setpoint);
+  public void setAltGoal(double distance) {
+    elePid.setGoal(distance/ClimberConstants.kAltConvertion);
   }
 
-  public void setRollGoal(double setpoint) {
-    rollPid.setGoal(setpoint);
+  public void setRollGoal(double degrees) {
+    rollPid.setGoal(degrees/ClimberConstants.kRollConvertion);
   }
 
   public void setClaw(Value value) {
