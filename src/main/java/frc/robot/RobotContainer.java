@@ -13,14 +13,14 @@ import frc.robot.subsystems.Auto.AutoSubsystem;
 
 public class RobotContainer {
 
-  private final AutoSubsystem auto = new AutoSubsystem();
+  final AutoSubsystem auto = new AutoSubsystem();
 
-  public final TurretSubsystem turret = new TurretSubsystem();
-  public final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
-  public final ClimberSubsystem climber = new ClimberSubsystem();
+  final TurretSubsystem turret = new TurretSubsystem();
+  final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
+  final ClimberSubsystem climber = new ClimberSubsystem();
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  
+
   public RobotContainer() {
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
