@@ -29,22 +29,22 @@ public class ClimberSubsystem extends SubsystemBase {
       PneumaticConstants.kClimberID1,
       PneumaticConstants.kClimberID2);
 
-  private ProfiledPIDController elePid = pids.kAltPid;
-  private ElevatorFeedforward eleFeed = pids.kAltEleFeed;
+  private ProfiledPIDController altPid = pids.kAltPid;
+  private ElevatorFeedforward altFeed = pids.kAltEleFeed;
   private ProfiledPIDController rollPid = pids.kRollPid;
 
   public ClimberSubsystem() {
-    elePid.setGoal(0);
+    altPid.setGoal(0);
     rollPid.setGoal(0);
   }
 
   @Override
   public void periodic() {
     altMotor.set(
-        elePid.calculate(
+        altPid.calculate(
             MathUtil.clamp(
                 altMotor.getEncoder().getPosition()
-                    + eleFeed.calculate(elePid.getSetpoint().velocity),
+                    + altFeed.calculate(altPid.getSetpoint().velocity),
                 ClimberConstants.kAltPidMin,
                 ClimberConstants.kAltPidMax)));
     rollMotor.set(
@@ -53,11 +53,19 @@ public class ClimberSubsystem extends SubsystemBase {
   }
 
   public void setAltGoal(double distance) {
-    elePid.setGoal(distance/ClimberConstants.kAltConvertion);
+    altPid.setGoal(distance / ClimberConstants.kAltConvertion);
+  }
+
+  public boolean atAltGoal() {
+    return altPid.atGoal();
   }
 
   public void setRollGoal(double degrees) {
-    rollPid.setGoal(degrees/ClimberConstants.kRollConvertion);
+    rollPid.setGoal(degrees / ClimberConstants.kRollConvertion);
+  }
+
+  public boolean atRollGoal() {
+    return rollPid.atGoal();
   }
 
   public void setClaw(Value value) {
