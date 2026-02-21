@@ -60,6 +60,11 @@ public final class Constants {
         kAltConvertion = 1, // TODO need corect convertion
         kRollConvertion = 1; // TODO need corect convertion
   }
+
+  public static class IntakeConstants {
+    public static double kIntakeSpeed = 0;
+  }
+
 }
 /*
  * pid stuff i found on the internet:
