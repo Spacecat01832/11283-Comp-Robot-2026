@@ -24,10 +24,10 @@ public class ClimberSubsystem extends SubsystemBase {
   private final SparkMax altMotor = new SparkMax(MotorIDs.kClimberAlt, MotorType.kBrushless);
   private final SparkMax rollMotor = new SparkMax(MotorIDs.kClimberRoll, MotorType.kBrushless);
 
-  private final DoubleSolenoid clawSolenoid = new DoubleSolenoid(
-      PneumaticConstants.kPneumaticsModuleType,
-      PneumaticConstants.kClimberID1,
-      PneumaticConstants.kClimberID2);
+  private DoubleSolenoid clawSolenoid = new DoubleSolenoid(
+    PneumaticConstants.kPneumaticsModuleType, 
+    PneumaticConstants.clawID1, 
+    PneumaticConstants.clawID2);
 
   private ProfiledPIDController altPid = pids.kAltPid;
   private ElevatorFeedforward altFeed = pids.kAltEleFeed;
