@@ -10,11 +10,11 @@ import frc.robot.subsystems.ClimberSubsystem;
 
 public class setClawPosition extends InstantCommand {
   private ClimberSubsystem climber;
-  Value value = Value.kOff;
+  Value value = Value.kReverse;
+
   public setClawPosition(
-    ClimberSubsystem climber,
-    Value value
-  ) {
+      ClimberSubsystem climber,
+      Value value) {
     addRequirements(climber);
     this.climber = climber;
     this.value = value;

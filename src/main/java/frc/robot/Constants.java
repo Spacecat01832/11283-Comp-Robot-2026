@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int k2ndDriverControllerPort = 1;
   }
 
   public static class PneumaticConstants {
@@ -58,7 +59,9 @@ public final class Constants {
     public static double kAltPidMax = 0,
         kAltPidMin = 0,
         kAltConvertion = 1, // TODO need corect convertion
-        kRollConvertion = 1; // TODO need corect convertion
+        kRollConvertion = 1, // TODO need corect convertion
+        kClimbHeight = 9,
+        kClimbRoll = 0;
   }
 
   public static class IntakeConstants {

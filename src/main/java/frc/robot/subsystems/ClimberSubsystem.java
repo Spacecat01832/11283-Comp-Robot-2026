@@ -25,9 +25,9 @@ public class ClimberSubsystem extends SubsystemBase {
   private final SparkMax rollMotor = new SparkMax(MotorIDs.kClimberRoll, MotorType.kBrushless);
 
   private DoubleSolenoid clawSolenoid = new DoubleSolenoid(
-    PneumaticConstants.kPneumaticsModuleType, 
-    PneumaticConstants.clawID1, 
-    PneumaticConstants.clawID2);
+      PneumaticConstants.kPneumaticsModuleType,
+      PneumaticConstants.clawID1,
+      PneumaticConstants.clawID2);
 
   private ProfiledPIDController altPid = pids.kAltPid;
   private ElevatorFeedforward altFeed = pids.kAltEleFeed;
@@ -36,6 +36,7 @@ public class ClimberSubsystem extends SubsystemBase {
   public ClimberSubsystem() {
     altPid.setGoal(0);
     rollPid.setGoal(0);
+    clawSolenoid.set(Value.kReverse);
   }
 
   @Override

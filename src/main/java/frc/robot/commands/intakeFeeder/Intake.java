@@ -9,14 +9,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.IntakeFeederSubsystem;
 
-public class Intake extends Command {
+public class intake extends Command {
   boolean mEnd;
   private IntakeFeederSubsystem intake;
   private boolean doIntakeReturn;
   private int intakeDirection;
   // set intake direction to 0 if you want no intake
 
-  public Intake(
+  public intake(
       IntakeFeederSubsystem intake,
       boolean doIntakeReturn,
       int intakeDirection) {
