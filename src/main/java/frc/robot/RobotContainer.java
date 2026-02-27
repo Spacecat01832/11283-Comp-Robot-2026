@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.*;
-import frc.robot.commands.Climber.climbSetup;
-import frc.robot.commands.Climber.setAltPosition;
+// import frc.robot.commands.Climber.climbSetup;
+// import frc.robot.commands.Climber.setAltPosition;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.Auto.AutoSubsystem;
 
@@ -19,9 +19,9 @@ public class RobotContainer {
 
   final TurretSubsystem turret = new TurretSubsystem();
   final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
-  final ClimberSubsystem climber = new ClimberSubsystem();
+  //final ClimberSubsystem climber = new ClimberSubsystem();
 
-  final climbSetup climbSetup = new climbSetup(climber);
+  //final climbSetup climbSetup = new climbSetup(climber);
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   final CommandXboxController secondDriverController = new CommandXboxController(
@@ -33,9 +33,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    secondDriverController.y()
-        .whileTrue(climbSetup)
-        .whileFalse(new setAltPosition(climber, 0));
+    // secondDriverController.y()
+    //     .whileTrue(climbSetup)
+    //     .whileFalse(new setAltPosition(climber, 0));
   }
 
   public Command getAutonomousCommand() {
