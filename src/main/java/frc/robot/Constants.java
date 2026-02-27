@@ -18,16 +18,16 @@ public final class Constants {
   public static class PneumaticConstants {
     public static final PneumaticsModuleType kPneumaticsModuleType = PneumaticsModuleType.REVPH;
     // TODO module ids are subject to change
-    public static final int clawID1 = 1, clawID2 = 2, intakeID = 3;
+    public static final int /*clawID1 = 1, clawID2 = 2,*/ intakeID1 = 0, intakeID2 = 1;
   }
 
   public static class MotorIDs { // TODO Change the ID's to the correct ones
-    public static final int kBottemTurret = 1,
-        kTopTurret = 2,
-        kTurretYaw = 3,
-        kIntake = 4,
-        kClimberRoll = 5,
-        kClimberAlt = 6;
+    public static final int /*kBottemTurret = 53,
+        kTopTurret = 43,*/
+        kTurretYaw = 4,
+        kIntake = 1;
+        /*kClimberRoll = 56,
+        kClimberAlt = 54;*/
   }
 
   public static class TurretConstants {

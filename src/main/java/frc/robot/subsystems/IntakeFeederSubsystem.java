@@ -7,16 +7,18 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.PneumaticConstants;
 
 public class IntakeFeederSubsystem extends SubsystemBase {
 
-  private Solenoid intakeSolenoid = new Solenoid(
-      PneumaticConstants.kPneumaticsModuleType,
-      PneumaticConstants.intakeID);
+  private DoubleSolenoid intakeSolenoid = new DoubleSolenoid(
+    PneumaticConstants.kPneumaticsModuleType, 
+    PneumaticConstants.intakeID1, 
+    PneumaticConstants.intakeID2);
 
   private final SparkMax intakeMotor = new SparkMax(MotorIDs.kIntake, MotorType.kBrushless);
 
@@ -27,7 +29,7 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   public void periodic() {
   }
 
-  public void setIntakeSolenoid(boolean value) {
+  public void setIntakeSolenoid(Value value) {
     intakeSolenoid.set(value);
   }
 

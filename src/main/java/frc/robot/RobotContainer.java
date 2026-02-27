@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
+import frc.robot.commands.intakeFeeder.intake;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.commands.Climber.climbSetup;
 // import frc.robot.commands.Climber.setAltPosition;
@@ -27,11 +28,16 @@ public class RobotContainer {
 
   final AutoSubsystem auto = new AutoSubsystem();
 
-  final TurretSubsystem turret = new TurretSubsystem();
+  // final TurretSubsystem turret = new TurretSubsystem();
   final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
   // final ClimberSubsystem climber = new ClimberSubsystem();
 
   // final climbSetup climbSetup = new climbSetup(climber);
+  final Command intake(
+      boolean dointakereturn,
+      int intakespeed) {
+    return new intake(intakeFeeder, dointakereturn, intakespeed);
+  }
 
   final CommandJoystick joystick = new CommandJoystick(OperatorConstants.kDriverControllerPort);
   final CommandXboxController buttonController = new CommandXboxController(
@@ -91,9 +97,13 @@ public class RobotContainer {
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
-    // secondDriverController.y()
+    // buttonController.y()
     // .whileTrue(climbSetup)
     // .whileFalse(new setAltPosition(climber, 0));
+
+    buttonController.x()
+        .whileTrue(intake(false, 1))
+        .whileFalse(intake(true, 0));
   }
 
   public Command getAutonomousCommand() {

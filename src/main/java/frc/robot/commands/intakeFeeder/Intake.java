@@ -5,6 +5,7 @@
 package frc.robot.commands.intakeFeeder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.IntakeFeederSubsystem;
@@ -33,7 +34,7 @@ public class intake extends Command {
 
   @Override
   public void execute() {
-    intake.setIntakeSolenoid(true);
+    intake.setIntakeSolenoid(Value.kForward);
     intake.setIntakeMotor(intakeDirection * IntakeConstants.kIntakeSpeed);
   }
 
@@ -41,7 +42,7 @@ public class intake extends Command {
   public void end(boolean interrupted) {
     intake.setIntakeMotor(0);
     if (doIntakeReturn) {
-      intake.setIntakeSolenoid(false);
+      intake.setIntakeSolenoid(Value.kReverse);
     }
   }
 

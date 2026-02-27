@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
 
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    compressor.enableDigital();
+    compressor.enableAnalog(45, 100);
 
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
