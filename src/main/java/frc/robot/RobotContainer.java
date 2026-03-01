@@ -10,13 +10,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
-import frc.robot.commands.intakeFeeder.intake;
+import frc.robot.commands.Turret.changeShooterSpeeds;
+import frc.robot.commands.intakeFeeder.*;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.commands.Climber.climbSetup;
 // import frc.robot.commands.Climber.setAltPosition;
@@ -28,18 +28,28 @@ public class RobotContainer {
 
   final AutoSubsystem auto = new AutoSubsystem();
 
-  // final TurretSubsystem turret = new TurretSubsystem();
+  final TurretSubsystem turret = new TurretSubsystem();
   final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
   // final ClimberSubsystem climber = new ClimberSubsystem();
 
   // final climbSetup climbSetup = new climbSetup(climber);
-  final Command intake(
-      boolean dointakereturn,
-      int intakespeed) {
-    return new intake(intakeFeeder, dointakereturn, intakespeed);
+  final Command intake(int direction) {
+    return new intake(intakeFeeder, direction);
   }
 
-  final CommandJoystick joystick = new CommandJoystick(OperatorConstants.kDriverControllerPort);
+  final Command feed(int direction) {
+    return new feed(intakeFeeder, direction);
+  }
+
+  final Command moveIntake() {
+    return new moveIntake(intakeFeeder);
+  }
+
+  final Command setShooter(double topspeed, double bottomSpeed){
+    return new changeShooterSpeeds(turret, topspeed, bottomSpeed);
+  }
+
+  final CommandXboxController joystick = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   final CommandXboxController buttonController = new CommandXboxController(
       OperatorConstants.k2ndDriverControllerPort);
 
@@ -61,7 +71,6 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
-    DriverStation.silenceJoystickConnectionWarning(true);
   }
 
   private void configureBindings() {
@@ -69,10 +78,10 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getY() * MaxSpeed) // Drive forward with negative Y
+        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * 0.7 * MaxSpeed) // Drive forward with negative Y
                                                                                        // (forward)
-            .withVelocityY(-joystick.getX() * MaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getZ() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withVelocityY(-joystick.getLeftX() * 0.8 * MaxSpeed) // Drive left with negative X (left)
+            .withRotationalRate(-joystick.getRightX() * 1.55 * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -81,9 +90,9 @@ public class RobotContainer {
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    joystick.button(1).whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.button(9).whileTrue(
-        drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getY(), -joystick.getX()))));
+    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+    joystick.b().whileTrue(
+        drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -93,7 +102,7 @@ public class RobotContainer {
     // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // Reset the field-centric heading on left bumper press.
-    joystick.button(12).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+    joystick.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -101,12 +110,26 @@ public class RobotContainer {
     // .whileTrue(climbSetup)
     // .whileFalse(new setAltPosition(climber, 0));
 
-    buttonController.x()
-        .whileTrue(intake(false, 1))
-        .whileFalse(intake(true, 0));
+    buttonController.back()
+        .onTrue(moveIntake());
+    buttonController.a()
+        .whileTrue(intake(1));
+    buttonController.b()
+        .whileTrue(intake(-1));
+    buttonController.rightBumper()
+        .whileTrue(setShooter(-500, 213))
+        .onFalse(setShooter(0, 0));
+    buttonController.leftBumper()
+        .whileTrue(setShooter(-1000, 426))
+        .onFalse(setShooter(0, 0));
+    buttonController.y()
+        .whileTrue(feed(1));
   }
 
   public Command getAutonomousCommand() {
     return auto.getSelectedAuto();
+  }
+
+  public void periodic() {
   }
 }

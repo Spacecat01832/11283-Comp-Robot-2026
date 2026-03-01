@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.subsystems.IntakeFeederSubsystem;
 
-public class intake extends Command {
+public class feed extends Command {
   boolean mEnd;
   private IntakeFeederSubsystem intake;
   private int direction;
-  public intake(
+  public feed(
     IntakeFeederSubsystem intake,
     int direction
   ) {
@@ -28,12 +28,12 @@ public class intake extends Command {
 
   @Override
   public void execute() {
-    intake.setIntakeMotor(IntakeConstants.kIntakeSpeed*direction);
+    intake.setfeeders(IntakeConstants.kFeederSpeed*direction);
   }
 
   @Override
   public void end(boolean interrupted) {
-    intake.setIntakeMotor(0);
+    intake.setfeeders(0);
   }
 
   @Override

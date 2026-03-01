@@ -5,7 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
@@ -22,23 +24,31 @@ public final class Constants {
   }
 
   public static class MotorIDs { // TODO Change the ID's to the correct ones
-    public static final int /*kBottemTurret = 53,
-        kTopTurret = 43,*/
+    public static final int kBottemTurret = 1,
+        kTopTurret = 6,
         kTurretYaw = 4,
-        kIntake = 1;
+        kIntake = 1,
+        kFeeder1 = 2,
+        kFeeder2 = 3,
+        kIndexer = 5;
         /*kClimberRoll = 56,
         kClimberAlt = 54;*/
   }
 
   public static class TurretConstants {
     public ProfiledPIDController kPid = new ProfiledPIDController(
-        0.2,
-        0.005,
         0.1,
+        0,
+        0,
         new TrapezoidProfile.Constraints(0.5, 0.1));
-    public static double kPidMax = 0,
-        kPidMin = 0,
-        kConvertion = 1; // TODO need corect convertion
+    public SimpleMotorFeedforward kFeedFor = new SimpleMotorFeedforward(0.35, 0.45);
+    public PIDController topRevLimiter = new PIDController(0.00005, 0, 0), 
+    bottomRevLimiter = new PIDController(0.005, 0, 0);
+    public static double kPidDeadband = 0.001, 
+        kPidMax = 12,
+        kPidMin = -9.5,
+        kPidMinSpeed = 0.05,
+        kConvertion = 1;
   }
 
   public static class ClimberConstants {
@@ -65,7 +75,7 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = 0;
+    public static double kIntakeSpeed = -1, kFeederSpeed = 1;
   }
 
 }
