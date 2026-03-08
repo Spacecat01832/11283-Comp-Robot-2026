@@ -4,82 +4,37 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import static edu.wpi.first.units.Units.*;
+
+import frc.robot.generated.TunerConstants;
 
 public final class Constants {
   public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
-    public static final int k2ndDriverControllerPort = 1;
-  }
-
-  public static class PneumaticConstants {
-    public static final PneumaticsModuleType kPneumaticsModuleType = PneumaticsModuleType.REVPH;
-    // TODO module ids are subject to change
-    public static final int /*clawID1 = 1, clawID2 = 2,*/ intakeID1 = 0, intakeID2 = 1;
+    public static final int kDriverControllerPort = 0,
+        kButtonControllerPort = 1;
   }
 
   public static class MotorIDs { // TODO Change the ID's to the correct ones
-    public static final int kBottemTurret = 1,
-        kTopTurret = 6,
-        kTurretYaw = 4,
-        kIntake = 1,
-        kFeeder1 = 2,
-        kFeeder2 = 3,
+    public static final int kShooter = 1,
+        kShooterHood = 4,
+        kRIntake = 1,
+        kLIntake = 2,
+        kFeeder = 3,
         kIndexer = 5;
-        /*kClimberRoll = 56,
-        kClimberAlt = 54;*/
   }
 
-  public static class TurretConstants {
-    public ProfiledPIDController kPid = new ProfiledPIDController(
-        0.1,
-        0,
-        0,
-        new TrapezoidProfile.Constraints(0.5, 0.1));
-    public SimpleMotorFeedforward kFeedFor = new SimpleMotorFeedforward(0.35, 0.45);
-    public PIDController topRevLimiter = new PIDController(0.00005, 0, 0), 
-    bottomRevLimiter = new PIDController(0.005, 0, 0);
-    public static double kPidDeadband = 0.001, 
-        kPidMax = 12,
-        kPidMin = -9.5,
-        kPidMinSpeed = 0.05,
-        kConvertion = 1;
-  }
-
-  public static class ClimberConstants {
-    public ProfiledPIDController kAltPid = new ProfiledPIDController(
-        0.2,
-        0.005,
-        0.1,
-        new TrapezoidProfile.Constraints(0.7, 0.3));
-    public ElevatorFeedforward kAltEleFeed = new ElevatorFeedforward(
-        1.1,
-        1.2,
-        1.3);
-    public ProfiledPIDController kRollPid = new ProfiledPIDController(
-        0.2,
-        0.005,
-        0.1,
-        new TrapezoidProfile.Constraints(0.5, 0.2));
-    public static double kAltPidMax = 0,
-        kAltPidMin = 0,
-        kAltConvertion = 1, // TODO need corect convertion
-        kRollConvertion = 1, // TODO need corect convertion
-        kClimbHeight = 9,
-        kClimbRoll = 0;
+  public static class ShooterConstants {
+    public static double kPidDeadband = 0.001,
+        kPidMax = 0,
+        kPidMin = 0;
   }
 
   public static class IntakeConstants {
     public static double kIntakeSpeed = -1, kFeederSpeed = 1;
   }
 
+  public static class DriveConstants {
+    public static double kMaxSpeed = 0.6 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+        kMaxAngularRate = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
+  }
 }
-/*
- * pid stuff i found on the internet:
- * Robotics/Motion: KP=(0.2-0.8) KI=(0.005-0.05) KD=(0.1-2.0)
- */
