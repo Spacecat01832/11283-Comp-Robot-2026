@@ -17,20 +17,18 @@ public final class Constants {
   public static class MotorIDs { // TODO Change the ID's to the correct ones
     public static final int kShooter = 1,
         kShooterHood = 4,
-        kRIntake = 1,
-        kLIntake = 2,
+        kIntake = 1,
+        kIntakeMover = 20,
         kFeeder = 3,
         kIndexer = 5;
   }
 
   public static class ShooterConstants {
-    public static double kPidDeadband = 0.001,
-        kPidMax = 0,
-        kPidMin = 0;
+    public static double kHoodSpeed = 0.5;
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -1, kFeederSpeed = 1;
+    public static double kIntakeSpeed = -1, kIntakeMoverSpeed = 0.5, kFeederSpeed = 1, koutPosition = 0;
   }
 
   public static class DriveConstants {

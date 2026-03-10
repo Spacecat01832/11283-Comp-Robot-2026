@@ -11,6 +11,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -23,22 +24,30 @@ public class ShooterSubsystem extends SubsystemBase {
   private final TalonFX shooterMotor = new TalonFX(MotorIDs.kShooter);
   private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushless);
 
-  private ProfiledPIDController hoodPid = new ProfiledPIDController(0, 0, 0, null);
+  private ProfiledPIDController hoodPid = new ProfiledPIDController(
+    0, 
+    0, 
+    0, 
+    new TrapezoidProfile.Constraints(ShooterConstants.kHoodSpeed, 0.1));
 
-  private SimpleMotorFeedforward hoodFeed = new SimpleMotorFeedforward(0, 0);
+  private SimpleMotorFeedforward hoodFeed = new SimpleMotorFeedforward(
+    0, 
+    0);
 
-  private PIDController revLimiter = new PIDController(0, 0, 0);
+  private PIDController revLimiter = new PIDController(
+    0, 
+    0, 
+    0);
 
   public ShooterSubsystem() {
     hoodPid.setGoal(0);
-    hoodPid.setTolerance(ShooterConstants.kPidDeadband);
     revLimiter.setSetpoint(0);
   }
 
   @Override
   public void periodic() {
     hoodMotor.set(hoodPid.calculate(hoodMotor.getEncoder().getPosition() + hoodFeed.calculate(hoodPid.getSetpoint().velocity)));
-    SmartDashboard.putNumber("tyaw", hoodMotor.getEncoder().getPosition());
+    SmartDashboard.putNumber("hoodPosition", hoodMotor.getEncoder().getPosition());
     shooterMotor.set(revLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
