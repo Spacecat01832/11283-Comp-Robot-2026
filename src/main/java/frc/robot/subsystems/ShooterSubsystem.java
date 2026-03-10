@@ -41,6 +41,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public ShooterSubsystem() {
     hoodPid.setGoal(0);
+    hoodPid.setTolerance(ShooterConstants.kPidDeadband);
     revLimiter.setSetpoint(0);
   }
 
