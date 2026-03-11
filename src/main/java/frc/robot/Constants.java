@@ -16,19 +16,27 @@ public final class Constants {
 
   public static class MotorIDs { // TODO Change the ID's to the correct ones
     public static final int kShooter = 1,
-        kShooterHood = 4,
-        kIntake = 1,
-        kIntakeMover = 20,
-        kFeeder = 3,
-        kIndexer = 5;
+        kShooterHood = 2,
+        kIndexer = 3,
+        kFeeder = 4,
+        kIntake = 5,
+        kIntakeFlopper = 6;
+        
   }
 
   public static class ShooterConstants {
-    public static double kHoodSpeed = 0.5, kHoodMaxAngle = 90, kHoodMinAngle = 0, kPidDeadband = 0.5;
+    public static double kHoodMaxSpeed = 0.5,
+    kHoodMaxAngle = 90, 
+    kShooterMaxSpeed = 100, 
+    kPidDeadband = 1.5;
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -1, kIntakeMoverSpeed = 0.5, kFeederSpeed = 1, koutPosition = 0;
+    public static double kIntakeSpeed = -1, 
+    kIntakeFlopperMaxSpeed = 0.5,
+    kFeederSpeed = 1, 
+    kIndexerMaxSpeed = 1,
+    koutPosition = 41;
   }
 
   public static class DriveConstants {
@@ -36,3 +44,8 @@ public final class Constants {
         kMaxAngularRate = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
   }
 }
+
+/* 
+ * shooter hood sparkmax conversion is at 110.7692307692 
+ * intake position sparkmax conversion is at 19.125
+ */

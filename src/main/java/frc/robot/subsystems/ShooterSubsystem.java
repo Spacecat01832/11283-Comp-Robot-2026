@@ -8,13 +8,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 
 import frc.robot.Constants.MotorIDs;
 import frc.robot.Constants.ShooterConstants;
@@ -25,34 +22,40 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushless);
 
   private ProfiledPIDController hoodPid = new ProfiledPIDController(
-    0, 
-    0, 
-    0, 
-    new TrapezoidProfile.Constraints(ShooterConstants.kHoodSpeed, 0.1));
+      0,
+      0,
+      0,
+      new TrapezoidProfile.Constraints(ShooterConstants.kHoodMaxSpeed, 0.1));
 
   private SimpleMotorFeedforward hoodFeed = new SimpleMotorFeedforward(
-    0, 
-    0);
+      0,
+      0);
 
-  private PIDController revLimiter = new PIDController(
-    0, 
-    0, 
-    0);
+  private ProfiledPIDController ShooterLimiter = new ProfiledPIDController(
+      0,
+      0,
+      0,
+      new TrapezoidProfile.Constraints(ShooterConstants.kShooterMaxSpeed, 50));
 
   public ShooterSubsystem() {
     hoodPid.setGoal(0);
     hoodPid.setTolerance(ShooterConstants.kPidDeadband);
-    revLimiter.setSetpoint(0);
+    ShooterLimiter.setGoal(0);
   }
 
   @Override
   public void periodic() {
-    hoodMotor.set(hoodPid.calculate(hoodMotor.getEncoder().getPosition() + hoodFeed.calculate(hoodPid.getSetpoint().velocity)));
-    SmartDashboard.putNumber("hoodPosition", hoodMotor.getEncoder().getPosition());
-    shooterMotor.set(revLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble()));
+    hoodMotor.set(
+        hoodPid.calculate(hoodMotor.getEncoder().getPosition() + hoodFeed.calculate(hoodPid.getSetpoint().velocity)));
+    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {
+    if (angle < 0) {
+      angle = 0;
+    } else if (angle > ShooterConstants.kHoodMaxAngle) {
+      angle = ShooterConstants.kHoodMaxAngle;
+    }
     hoodPid.setGoal(angle);
   }
 
@@ -60,7 +63,11 @@ public class ShooterSubsystem extends SubsystemBase {
     return hoodPid.atGoal();
   }
 
+  public double getHoodPosition() {
+    return hoodMotor.getEncoder().getPosition();
+  }
+
   public void Shooter(double speed) {
-    revLimiter.setSetpoint(speed);
+    ShooterLimiter.setGoal(speed);
   }
 }
