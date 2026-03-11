@@ -9,9 +9,14 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
+import frc.robot.commands.intakeFeeder.*;
+import frc.robot.commands.shooter.*;
 import frc.robot.generated.TunerConstants;
 // import frc.robot.commands.Climber.climbSetup;
 // import frc.robot.commands.Climber.setAltPosition;
@@ -26,12 +31,35 @@ public class RobotContainer {
   final ShooterSubsystem shooter = new ShooterSubsystem();
   final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
 
+  final SetFeederSpeed setFeederSpeed(double speed) {
+    return new SetFeederSpeed(intakeFeeder, speed);
+  }
+
+  final SetIndexerSpeed setIndexerSpeed(double speed) {
+    return new SetIndexerSpeed(intakeFeeder, speed);
+  }
+
+  final SetIntakePosition setIntakePosition(double position) {
+    return new SetIntakePosition(intakeFeeder, position);
+  }
+
+  final SetHoodPosition setHoodPosition(double position) {
+    return new SetHoodPosition(shooter, position);
+  }
+
+  final SetShooterSpeed setShooterSpeed(double speed) {
+    return new SetShooterSpeed(shooter, speed);
+  }
+
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   final CommandXboxController buttonController = new CommandXboxController(OperatorConstants.kButtonControllerPort);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1) // Add a 10% deadband
+      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1) // Add
+                                                                                                                 // a
+                                                                                                                 // 10%
+                                                                                                                 // deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -49,10 +77,15 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * DriveConstants.kMaxSpeed) // Drive forward with negative Y
-                                                                                       // (forward)
+        drivetrain.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * DriveConstants.kMaxSpeed) // Drive
+                                                                                                                   // forward
+                                                                                                                   // with
+                                                                                                                   // negative
+                                                                                                                   // Y
             .withVelocityY(-driverController.getLeftX() * DriveConstants.kMaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate) // Drive counterclockwise with negative X (left)
+            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate) // Drive
+                                                                                                // counterclockwise with
+                                                                                                // negative X (left)
         ));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -63,7 +96,8 @@ public class RobotContainer {
 
     driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
     driverController.b().whileTrue(
-        drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
+        drivetrain.applyRequest(() -> point
+            .withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -77,7 +111,26 @@ public class RobotContainer {
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
+    driverController.rightBumper()
+        .onTrue(setIntakePosition(IntakeConstants.koutPosition))
+        .onFalse(setIntakePosition(0));
 
+    driverController.leftBumper()
+        .onTrue(new SequentialCommandGroup(
+          setShooterSpeed(0),
+          new WaitCommand(0.1),
+          new ParallelCommandGroup(
+            setIndexerSpeed(0),
+            setFeederSpeed(0)
+          )
+        ))
+        .onFalse(
+          new ParallelCommandGroup(
+            setFeederSpeed(0),
+            setIndexerSpeed(0),
+            setShooterSpeed(0)
+          )
+        );
   }
 
   public Command getAutonomousCommand() {
