@@ -24,7 +24,7 @@ import frc.robot.Constants.ShooterConstants;
 public class ShooterSubsystem extends SubsystemBase {
 
   private final TalonFX shooterMotor = new TalonFX(MotorIDs.kShooter);
-  private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushless);
+  private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushed);
 
   private ProfiledPIDController hoodPid = new ProfiledPIDController(
       0,

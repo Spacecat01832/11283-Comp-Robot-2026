@@ -37,7 +37,7 @@ public class IntakeFeederSubsystem extends SubsystemBase {
 
   private SparkMax indexMotor = new SparkMax(MotorIDs.kIndexer, MotorType.kBrushless);
 
-  private NetworkTable nt = NetworkTableInstance.getDefault().getTable("Shooter");
+  private NetworkTable nt = NetworkTableInstance.getDefault().getTable("IntakeFeeder");
 
   private NetworkTableEntry intakeFlopperPositionEntry = nt.getEntry("Intake Flopper Position"),
       intakeFlopperGoalEntry = nt.getEntry("Intake Flopper Goal"),
