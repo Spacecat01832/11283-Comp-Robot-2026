@@ -27,7 +27,7 @@ public final class Constants {
   public static class ShooterConstants {
     public static double kHoodMaxSpeed = 0.5,
     kHoodMaxAngle = 90, 
-    kShooterMaxSpeed = 100, 
+    kShooterMaxSpeed = 1, 
     kPidDeadband = 1.5;
   }
 
