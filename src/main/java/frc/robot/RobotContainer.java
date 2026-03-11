@@ -52,14 +52,11 @@ public class RobotContainer {
   }
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  final CommandXboxController buttonController = new CommandXboxController(OperatorConstants.kButtonControllerPort);
+  //final CommandXboxController buttonController = new CommandXboxController(OperatorConstants.kButtonControllerPort);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1) // Add
-                                                                                                                 // a
-                                                                                                                 // 10%
-                                                                                                                 // deadband
+      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1)
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -77,15 +74,9 @@ public class RobotContainer {
     // and Y is defined as to the left according to WPILib convention.
     drivetrain.setDefaultCommand(
         // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * DriveConstants.kMaxSpeed) // Drive
-                                                                                                                   // forward
-                                                                                                                   // with
-                                                                                                                   // negative
-                                                                                                                   // Y
-            .withVelocityY(-driverController.getLeftX() * DriveConstants.kMaxSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate) // Drive
-                                                                                                // counterclockwise with
-                                                                                                // negative X (left)
+        drivetrain.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * DriveConstants.kMaxSpeed)
+            .withVelocityY(-driverController.getLeftX() * DriveConstants.kMaxSpeed)
+            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate)
         ));
 
     // Idle while the robot is disabled. This ensures the configured
@@ -117,7 +108,7 @@ public class RobotContainer {
 
     driverController.leftBumper()
         .onTrue(new SequentialCommandGroup(
-          setShooterSpeed(0),
+          setShooterSpeed(drivetrain.distanceToPose(drivetrain.startingpointfrompath("HubPositions"))),
           new WaitCommand(0.1),
           new ParallelCommandGroup(
             setIndexerSpeed(0),

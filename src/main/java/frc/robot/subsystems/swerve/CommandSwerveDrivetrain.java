@@ -24,6 +24,7 @@ import com.pathplanner.lib.util.FileVersionException;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -383,5 +384,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         return null;
     }
+
+    public Translation2d startingpointfrompath(String pathname) {
+        var path = pathfromfile(pathname);
+        if (path != null) {
+            return path.getPoint(0).position;
+        }
+        return new Translation2d();
+    }
+
+    public double distanceToPose(Translation2d targetPose) {
+        var currentPose = getState().Pose;
+        return currentPose.getTranslation().getDistance(targetPose);
+    }
+
+    // public double angleToPose(Pose2d targetPose) {
+    //     var currentPose = getState().Pose;
+    // }
 
 }
