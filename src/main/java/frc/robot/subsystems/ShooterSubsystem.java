@@ -34,7 +34,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private ElevatorFeedforward hoodFeed = new ElevatorFeedforward(
       0,
-      0, 
+      0,
       0);
 
   private PIDController ShooterLimiter = new PIDController(
@@ -110,7 +110,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     hoodMotor.set(
         hoodPid.calculate(hoodMotor.getEncoder().getPosition()) + hoodFeed.calculate(hoodPid.getSetpoint().velocity));
-    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble()) + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
+    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
+        + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {

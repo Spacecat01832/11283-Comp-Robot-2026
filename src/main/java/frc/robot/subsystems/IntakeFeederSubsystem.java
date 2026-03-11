@@ -54,7 +54,6 @@ public class IntakeFeederSubsystem extends SubsystemBase {
       indexerMaxSpeed = nt.getEntry("indexerMaxSpeed"), // TODO doesn't need to be here
       indexeracel = nt.getEntry("indexeracel"); // TODO doesn't need to be here
 
-
   public IntakeFeederSubsystem() {
     intakeFlopperkp.setDefaultDouble(0);
     intakeFlopperki.setDefaultDouble(0);
@@ -75,7 +74,8 @@ public class IntakeFeederSubsystem extends SubsystemBase {
     flopperPID.setPID(intakeFlopperkp.getDouble(0),
         intakeFlopperki.getDouble(0),
         intakeFlopperkd.getDouble(0));
-    flopperPID.setConstraints(new TrapezoidProfile.Constraints(intakeFlopperMaxSpeed.getDouble(0), intakeFlopperacel.getDouble(0)));
+    flopperPID.setConstraints(
+        new TrapezoidProfile.Constraints(intakeFlopperMaxSpeed.getDouble(0), intakeFlopperacel.getDouble(0)));
 
     indexerPID.setPID(indexerkp.getDouble(0), indexerki.getDouble(0), indexerkd.getDouble(0));
     indexerPID.setConstraints(new TrapezoidProfile.Constraints(indexerMaxSpeed.getDouble(0), indexeracel.getDouble(0)));
