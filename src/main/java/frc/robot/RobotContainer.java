@@ -108,7 +108,7 @@ public class RobotContainer {
 
     driverController.leftBumper()
         .onTrue(new SequentialCommandGroup(
-          setShooterSpeed(drivetrain.distanceToPose(drivetrain.startingpointfrompath("HubPositions"))),
+          setShooterSpeed(drivetrain.distanceToPose(drivetrain.startingpointfrompath("HubPositions"))*1),
           new WaitCommand(0.1),
           new ParallelCommandGroup(
             setIndexerSpeed(0),
