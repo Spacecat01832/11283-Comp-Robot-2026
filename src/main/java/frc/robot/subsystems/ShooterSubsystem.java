@@ -9,7 +9,6 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -29,22 +28,17 @@ public class ShooterSubsystem extends SubsystemBase {
   private final SparkAbsoluteEncoder hoodEncoder = hoodMotor.getAbsoluteEncoder();
 
   private ProfiledPIDController hoodPid = new ProfiledPIDController(
-      0,
+      0.07,
       0,
       0,
       new TrapezoidProfile.Constraints(ShooterConstants.kHoodMaxSpeed, 0.1));
 
-  private ElevatorFeedforward hoodFeed = new ElevatorFeedforward(
-      0,
-      0,
-      0);
-
   private PIDController ShooterLimiter = new PIDController(
-      0,
-      0,
-      0);
+      0.008,
+      0.0005,
+      0.0001);
 
-  private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0, 0);
+  private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0.01, 0.0098);
 
   private NetworkTable nt = NetworkTableInstance.getDefault().getTable("Shooter");
 
@@ -63,6 +57,7 @@ public class ShooterSubsystem extends SubsystemBase {
       shooterkp = nt.getEntry("shooterkp"),
       shooterki = nt.getEntry("shooterki"),
       shooterkd = nt.getEntry("shooterkd"),
+      shooterks = nt.getEntry("shooterks"),
       shooterkv = nt.getEntry("shooterkv"),
       shooterspeed = nt.getEntry("shootersetSpeed"),
       hoodposition = nt.getEntry("hoodposition");
@@ -84,6 +79,7 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterkp.setDefaultDouble(0);
     shooterki.setDefaultDouble(0);
     shooterkd.setDefaultDouble(0);
+    shooterks.setDefaultDouble(0);
     shooterkv.setDefaultDouble(0);
     shooterspeed.setDefaultDouble(0);
     hoodposition.setDefaultDouble(0);
@@ -95,15 +91,13 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodPid.setPID(hoodkp.getDouble(0),
         hoodki.getDouble(0),
         hoodkd.getDouble(0));
-    hoodFeed.setKs(hoodks.getDouble(0));
-    hoodFeed.setKv(hoodkv.getDouble(0));
-    hoodFeed.setKg(hoodkg.getDouble(0));
     hoodPid.setConstraints(new TrapezoidProfile.Constraints(hoodmspeed.getDouble(0), hoodacel.getDouble(0)));
 
     ShooterLimiter.setPID(shooterkp.getDouble(0), shooterki.getDouble(0), shooterkd.getDouble(0));
+    shooterFeed.setKs(shooterks.getDouble(0));
     shooterFeed.setKv(shooterkv.getDouble(0));
 
-    hoodPositionEntry.setDouble(hoodMotor.getEncoder().getPosition());
+    hoodPositionEntry.setDouble(hoodEncoder.getPosition());
     hoodGoalEntry.setDouble(hoodPid.getSetpoint().position);
     shooterGoalEntry.setDouble(ShooterLimiter.getSetpoint());
     shooterSpeedEntry.setDouble(shooterMotor.getVelocity().getValueAsDouble());
@@ -115,18 +109,15 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     //setThingsOffOfNetworkTable();
-
-    hoodMotor.set(
-        hoodPid.calculate(hoodEncoder.getPosition())
-            + hoodFeed.calculate(hoodPid.getSetpoint().velocity));
+    hoodMotor.set(hoodPid.calculate(hoodEncoder.getPosition()));
     shooterMotor.set(
         ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
             + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {
-    hoodPid.setGoal(angle < 0
-        ? 0
+    hoodPid.setGoal(angle < 1.5
+        ? 1.5
         : angle > ShooterConstants.kHoodMaxAngle
             ? ShooterConstants.kHoodMaxAngle
             : angle);

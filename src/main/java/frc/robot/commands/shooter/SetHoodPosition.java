@@ -4,16 +4,14 @@
 
 package frc.robot.commands.shooter;
 
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.IntakeFeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class SetHoodPosition extends InstantCommand {
+/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+public class SetHoodPosition extends Command {
   private ShooterSubsystem shooter;
   private double position;
-
   public SetHoodPosition(ShooterSubsystem shooter, double position) {
     addRequirements(shooter);
     this.shooter = shooter;
@@ -24,5 +22,21 @@ public class SetHoodPosition extends InstantCommand {
   @Override
   public void initialize() {
     shooter.setHoodGoal(position);
+  }
+
+  // Called every time the scheduler runs while the command is scheduled.
+  @Override
+  public void execute() {}
+
+  // Called once the command ends or is interrupted.
+  @Override
+  public void end(boolean interrupted) {
+    shooter.setHoodGoal(position);
+  }
+
+  // Returns true when the command should end.
+  @Override
+  public boolean isFinished() {
+    return false;
   }
 }

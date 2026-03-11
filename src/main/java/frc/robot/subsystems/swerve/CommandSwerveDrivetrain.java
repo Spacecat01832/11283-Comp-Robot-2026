@@ -385,17 +385,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return null;
     }
 
-    public Translation2d startingpointfrompath(String pathname) {
+    public Translation2d pointfrompath(String pathname, int point) {
         var path = pathfromfile(pathname);
         if (path != null) {
-            return path.getPoint(0).position;
+            return path.getPoint(point).position;
         }
         return new Translation2d();
     }
 
     public double distanceToPose(Translation2d targetPose) {
         var currentPose = getState().Pose;
-        return currentPose.getTranslation().getDistance(targetPose);
+        var height = targetPose.getY() - currentPose.getY();
+        var width = targetPose.getX() - currentPose.getX();
+        return Math.hypot(width, height);
     }
 
     // public double angleToPose(Pose2d targetPose) {

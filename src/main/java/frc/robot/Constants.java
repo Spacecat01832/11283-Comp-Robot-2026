@@ -14,7 +14,7 @@ public final class Constants {
         kButtonControllerPort = 1;
   }
 
-  public static class MotorIDs { // TODO Change the ID's to the correct ones
+  public static class MotorIDs {
     public static final int kShooter = 1,
         kShooterHood = 2,
         kIndexer = 3,
@@ -25,9 +25,8 @@ public final class Constants {
   }
 
   public static class ShooterConstants {
-    public static double kHoodMaxSpeed = 0.5,
+    public static double kHoodMaxSpeed = 100,
     kHoodMaxAngle = 90, 
-    kShooterMaxSpeed = 1, 
     kPidDeadband = 1.5;
   }
 
@@ -35,7 +34,8 @@ public final class Constants {
     public static double kIntakeSpeed = -0.75, 
     kIntakeFlopperMaxSpeed = 0.5,
     kFeederSpeed = 1, 
-    kIndexerMaxSpeed = 1,
+    kIndexerMaxSpeed = 100,
+    kIndexerSpeed = 80,
     koutPosition = 41;
   }
 

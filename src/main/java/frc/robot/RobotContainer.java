@@ -8,18 +8,16 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
 import frc.robot.commands.intakeFeeder.*;
 import frc.robot.commands.shooter.*;
 import frc.robot.generated.TunerConstants;
-// import frc.robot.commands.Climber.climbSetup;
-// import frc.robot.commands.Climber.setAltPosition;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.Auto.AutoSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
@@ -52,7 +50,8 @@ public class RobotContainer {
   }
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-  //final CommandXboxController buttonController = new CommandXboxController(OperatorConstants.kButtonControllerPort);
+  // final CommandXboxController buttonController = new
+  // CommandXboxController(OperatorConstants.kButtonControllerPort);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -76,8 +75,7 @@ public class RobotContainer {
         // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-driverController.getLeftY() * DriveConstants.kMaxSpeed)
             .withVelocityY(-driverController.getLeftX() * DriveConstants.kMaxSpeed)
-            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate)
-        ));
+            .withRotationalRate(-driverController.getRightX() * DriveConstants.kMaxAngularRate)));
 
     // Idle while the robot is disabled. This ensures the configured
     // neutral mode is applied to the drive motors while disabled.
@@ -102,26 +100,21 @@ public class RobotContainer {
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
-    driverController.rightBumper()
-        .onTrue(setIntakePosition(IntakeConstants.koutPosition))
-        .onFalse(setIntakePosition(0));
+  driverController.rightBumper()
+    .onTrue(setIntakePosition(IntakeConstants.koutPosition))
+    .onFalse(setIntakePosition(0));
 
-    driverController.leftBumper()
-        .onTrue(new SequentialCommandGroup(
-          setShooterSpeed(drivetrain.distanceToPose(drivetrain.startingpointfrompath("HubPositions"))*1),
-          new WaitCommand(0.1),
-          new ParallelCommandGroup(
-            setIndexerSpeed(0),
-            setFeederSpeed(0)
-          )
-        ))
-        .onFalse(
-          new ParallelCommandGroup(
-            setFeederSpeed(0),
-            setIndexerSpeed(0),
-            setShooterSpeed(0)
-          )
-        );
+  // Use a single command that requires both the shooter and intakeFeeder
+  // subsystems to avoid requirement conflicts when trying to run multiple
+  // commands that touch the same subsystem in parallel.
+  driverController.leftBumper().whileTrue(
+    Commands.run(() -> {
+      // set everything to zero while the bumper is held
+      shooter.setShooterSpeed(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
+      shooter.setHoodGoal(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
+      intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+      intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+    }, shooter, intakeFeeder));
   }
 
   public Command getAutonomousCommand() {
@@ -129,5 +122,6 @@ public class RobotContainer {
   }
 
   public void periodic() {
+    SmartDashboard.putNumber("distance", drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
   }
 }
