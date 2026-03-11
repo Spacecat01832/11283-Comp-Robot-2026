@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -31,8 +32,9 @@ public class ShooterSubsystem extends SubsystemBase {
       0,
       new TrapezoidProfile.Constraints(ShooterConstants.kHoodMaxSpeed, 0.1));
 
-  private SimpleMotorFeedforward hoodFeed = new SimpleMotorFeedforward(
+  private ElevatorFeedforward hoodFeed = new ElevatorFeedforward(
       0,
+      0, 
       0);
 
   private PIDController ShooterLimiter = new PIDController(
@@ -51,6 +53,7 @@ public class ShooterSubsystem extends SubsystemBase {
       hoodkd = nt.getEntry("hoodkd"), // TODO doesn't need to be here
       hoodkv = nt.getEntry("hoodkv"), // TODO doesn't need to be here
       hoodks = nt.getEntry("hoodks"), // TODO doesn't need to be here
+      hoodkg = nt.getEntry("hoodkg"), // TODO doesn't need to be here
       hoodacel = nt.getEntry("hoodacel"), // TODO doesn't need to be here
       hoodmspeed = nt.getEntry("hoodmaxspeed"), // TODO doesn't need to be here
       shooterSpeedEntry = nt.getEntry("Shooter Speed"),
@@ -72,6 +75,7 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodkd.setDefaultDouble(0);
     hoodkv.setDefaultDouble(0);
     hoodks.setDefaultDouble(0);
+    hoodkg.setDefaultDouble(0);
     shooterkp.setDefaultDouble(0);
     shooterki.setDefaultDouble(0);
     shooterkd.setDefaultDouble(0);
@@ -90,6 +94,7 @@ public class ShooterSubsystem extends SubsystemBase {
         hoodkd.getDouble(0));
     hoodFeed.setKs(hoodks.getDouble(0));
     hoodFeed.setKv(hoodkv.getDouble(0));
+    hoodFeed.setKg(hoodkg.getDouble(0));
     hoodPid.setConstraints(new TrapezoidProfile.Constraints(hoodmspeed.getDouble(0), hoodacel.getDouble(0)));
 
     ShooterLimiter.setPID(shooterkp.getDouble(0), shooterki.getDouble(0), shooterkd.getDouble(0));
@@ -104,8 +109,8 @@ public class ShooterSubsystem extends SubsystemBase {
     Shooter(shooterspeed.getDouble(0));
 
     hoodMotor.set(
-        hoodPid.calculate(hoodMotor.getEncoder().getPosition() + hoodFeed.calculate(hoodPid.getSetpoint().velocity)));
-    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble() + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble())));
+        hoodPid.calculate(hoodMotor.getEncoder().getPosition()) + hoodFeed.calculate(hoodPid.getSetpoint().velocity));
+    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble()) + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {
