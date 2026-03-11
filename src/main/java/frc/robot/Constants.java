@@ -32,7 +32,7 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -1, 
+    public static double kIntakeSpeed = -0.75, 
     kIntakeFlopperMaxSpeed = 0.5,
     kFeederSpeed = 1, 
     kIndexerMaxSpeed = 1,

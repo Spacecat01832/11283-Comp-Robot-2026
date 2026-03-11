@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -25,6 +26,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private final TalonFX shooterMotor = new TalonFX(MotorIDs.kShooter);
   private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushed);
+  private final SparkAbsoluteEncoder hoodEncoder = hoodMotor.getAbsoluteEncoder();
 
   private ProfiledPIDController hoodPid = new ProfiledPIDController(
       0,
@@ -48,20 +50,20 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private NetworkTableEntry hoodPositionEntry = nt.getEntry("Hood Position"),
       hoodGoalEntry = nt.getEntry("Hood Goal"),
-      hoodkp = nt.getEntry("hoodkp"), // TODO doesn't need to be here
-      hoodki = nt.getEntry("hoodki"), // TODO doesn't need to be here
-      hoodkd = nt.getEntry("hoodkd"), // TODO doesn't need to be here
-      hoodkv = nt.getEntry("hoodkv"), // TODO doesn't need to be here
-      hoodks = nt.getEntry("hoodks"), // TODO doesn't need to be here
-      hoodkg = nt.getEntry("hoodkg"), // TODO doesn't need to be here
-      hoodacel = nt.getEntry("hoodacel"), // TODO doesn't need to be here
-      hoodmspeed = nt.getEntry("hoodmaxspeed"), // TODO doesn't need to be here
+      hoodkp = nt.getEntry("hoodkp"),
+      hoodki = nt.getEntry("hoodki"),
+      hoodkd = nt.getEntry("hoodkd"),
+      hoodkv = nt.getEntry("hoodkv"),
+      hoodks = nt.getEntry("hoodks"),
+      hoodkg = nt.getEntry("hoodkg"),
+      hoodacel = nt.getEntry("hoodacel"),
+      hoodmspeed = nt.getEntry("hoodmaxspeed"),
       shooterSpeedEntry = nt.getEntry("Shooter Speed"),
       shooterGoalEntry = nt.getEntry("Shooter Goal"),
-      shooterkp = nt.getEntry("shooterkp"), // TODO doesn't need to be here
-      shooterki = nt.getEntry("shooterki"), // TODO doesn't need to be here
-      shooterkd = nt.getEntry("shooterkd"), // TODO doesn't need to be here
-      shooterkv = nt.getEntry("shooterkv"), // TODO doesn't need to be here
+      shooterkp = nt.getEntry("shooterkp"),
+      shooterki = nt.getEntry("shooterki"),
+      shooterkd = nt.getEntry("shooterkd"),
+      shooterkv = nt.getEntry("shooterkv"),
       shooterspeed = nt.getEntry("shootersetSpeed"),
       hoodposition = nt.getEntry("hoodposition");
 
@@ -69,7 +71,10 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodPid.setGoal(0);
     hoodPid.setTolerance(ShooterConstants.kPidDeadband);
     ShooterLimiter.setSetpoint(0);
+    //setNetworkTableDefaults();
+  }
 
+  private void setNetworkTableDefaults() {
     hoodkp.setDefaultDouble(0);
     hoodki.setDefaultDouble(0);
     hoodkd.setDefaultDouble(0);
@@ -86,9 +91,7 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodmspeed.setDefaultDouble(0);
   }
 
-  @Override
-  public void periodic() {
-
+  private void setThingsOffOfNetworkTable() {
     hoodPid.setPID(hoodkp.getDouble(0),
         hoodki.getDouble(0),
         hoodkd.getDouble(0));
@@ -106,21 +109,27 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterSpeedEntry.setDouble(shooterMotor.getVelocity().getValueAsDouble());
 
     setHoodGoal(hoodposition.getDouble(0));
-    Shooter(shooterspeed.getDouble(0));
+    setShooterSpeed(shooterspeed.getDouble(0));
+  }
+
+  @Override
+  public void periodic() {
+    //setThingsOffOfNetworkTable();
 
     hoodMotor.set(
-        hoodPid.calculate(hoodMotor.getEncoder().getPosition()) + hoodFeed.calculate(hoodPid.getSetpoint().velocity));
-    shooterMotor.set(ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
-        + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
+        hoodPid.calculate(hoodEncoder.getPosition())
+            + hoodFeed.calculate(hoodPid.getSetpoint().velocity));
+    shooterMotor.set(
+        ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
+            + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {
-    if (angle < 0) {
-      angle = 0;
-    } else if (angle > ShooterConstants.kHoodMaxAngle) {
-      angle = ShooterConstants.kHoodMaxAngle;
-    }
-    hoodPid.setGoal(angle);
+    hoodPid.setGoal(angle < 0
+        ? 0
+        : angle > ShooterConstants.kHoodMaxAngle
+            ? ShooterConstants.kHoodMaxAngle
+            : angle);
   }
 
   public boolean atHoodGoal() {
@@ -131,7 +140,7 @@ public class ShooterSubsystem extends SubsystemBase {
     return hoodMotor.getEncoder().getPosition();
   }
 
-  public void Shooter(double speed) {
+  public void setShooterSpeed(double speed) {
     ShooterLimiter.setSetpoint(speed);
   }
 }

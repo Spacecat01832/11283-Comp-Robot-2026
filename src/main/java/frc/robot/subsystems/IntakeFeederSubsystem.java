@@ -41,20 +41,25 @@ public class IntakeFeederSubsystem extends SubsystemBase {
 
   private NetworkTableEntry intakeFlopperPositionEntry = nt.getEntry("Intake Flopper Position"),
       intakeFlopperGoalEntry = nt.getEntry("Intake Flopper Goal"),
-      intakeFlopperkp = nt.getEntry("intakeFlopperkp"), // TODO doesn't need to be here
-      intakeFlopperki = nt.getEntry("intakeFlopperki"), // TODO doesn't need to be here
-      intakeFlopperkd = nt.getEntry("intakeFlopperkd"), // TODO doesn't need to be here
-      intakeFlopperMaxSpeed = nt.getEntry("intakeFlopperMaxSpeed"), // TODO doesn't need to be here
-      intakeFlopperacel = nt.getEntry("intakeFlopperacel"), // TODO doesn't need to be here
+      intakeFlopperkp = nt.getEntry("intakeFlopperkp"), 
+      intakeFlopperki = nt.getEntry("intakeFlopperki"), 
+      intakeFlopperkd = nt.getEntry("intakeFlopperkd"), 
+      intakeFlopperMaxSpeed = nt.getEntry("intakeFlopperMaxSpeed"),
+      intakeFlopperacel = nt.getEntry("intakeFlopperacel"), 
       indexerSpeedEntry = nt.getEntry("Indexer Speed"),
       indexerGoalEntry = nt.getEntry("Indexer Goal"),
-      indexerkp = nt.getEntry("indexerkp"), // TODO doesn't need to be here
-      indexerki = nt.getEntry("indexerki"), // TODO doesn't need to be here
-      indexerkd = nt.getEntry("indexerkd"), // TODO doesn't need to be here
-      indexerMaxSpeed = nt.getEntry("indexerMaxSpeed"), // TODO doesn't need to be here
-      indexeracel = nt.getEntry("indexeracel"); // TODO doesn't need to be here
+      indexerkp = nt.getEntry("indexerkp"),
+      indexerki = nt.getEntry("indexerki"),
+      indexerkd = nt.getEntry("indexerkd"),
+      indexerMaxSpeed = nt.getEntry("indexerMaxSpeed"),
+      indexeracel = nt.getEntry("indexeracel");
 
   public IntakeFeederSubsystem() {
+    flopperPID.setGoal(0);
+    //setNetworkTableDefaults();
+  }
+
+  private void setNetworkTableDefaults() {
     intakeFlopperkp.setDefaultDouble(0);
     intakeFlopperki.setDefaultDouble(0);
     intakeFlopperkd.setDefaultDouble(0);
@@ -65,12 +70,9 @@ public class IntakeFeederSubsystem extends SubsystemBase {
     indexerkd.setDefaultDouble(0);
     indexerMaxSpeed.setDefaultDouble(0);
     indexeracel.setDefaultDouble(0);
-
-    flopperPID.setGoal(0);
   }
 
-  @Override
-  public void periodic() {
+  private void setThingsOffOfNetworkTable() {
     flopperPID.setPID(intakeFlopperkp.getDouble(0),
         intakeFlopperki.getDouble(0),
         intakeFlopperkd.getDouble(0));
@@ -84,13 +86,14 @@ public class IntakeFeederSubsystem extends SubsystemBase {
     intakeFlopperGoalEntry.setDouble(flopperPID.getSetpoint().position);
     indexerGoalEntry.setDouble(indexerPID.getSetpoint().position);
     indexerSpeedEntry.setDouble(indexMotor.getEncoder().getVelocity());
-
-    IntakeFlopperMotor.set(flopperPID.calculate(IntakeFlopperMotor.getEncoder().getPosition()));
-    indexMotor.set(indexerPID.calculate(indexMotor.getEncoder().getVelocity()));
   }
 
-  public void setIntake(double speed) {
-    IntakeMotor.set(speed);
+  @Override
+  public void periodic() {
+    //setThingsOffOfNetworkTable();
+    IntakeFlopperMotor.set(flopperPID.calculate(IntakeFlopperMotor.getEncoder().getPosition()));
+    indexMotor.set(indexerPID.calculate(indexMotor.getEncoder().getVelocity()));
+    IntakeMotor.set(IntakeFlopperMotor.getEncoder().getPosition() > 1 ? IntakeConstants.kIntakeSpeed : 0.0);
   }
 
   public void setFeeder(double speed) {
@@ -98,16 +101,15 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   }
 
   public void setIndexer(double speed) {
-    indexMotor.set(speed);
+    indexerPID.setGoal(speed);
   }
 
   public void setIntakeFlopper(double position) {
-    if (position < 0) {
-      position = 0;
-    } else if (position > IntakeConstants.koutPosition) {
-      position = IntakeConstants.koutPosition;
-    }
-    flopperPID.setGoal(position);
+    flopperPID.setGoal(position < 0
+        ? 0
+        : position > IntakeConstants.koutPosition
+            ? IntakeConstants.koutPosition
+            : position);
   }
 
   public double getIntakeFlopperPosition() {
