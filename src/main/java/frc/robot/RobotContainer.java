@@ -10,7 +10,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -104,12 +103,8 @@ public class RobotContainer {
     .onTrue(setIntakePosition(IntakeConstants.koutPosition))
     .onFalse(setIntakePosition(0));
 
-  // Use a single command that requires both the shooter and intakeFeeder
-  // subsystems to avoid requirement conflicts when trying to run multiple
-  // commands that touch the same subsystem in parallel.
   driverController.leftBumper().whileTrue(
     Commands.run(() -> {
-      // set everything to zero while the bumper is held
       shooter.setShooterSpeed(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
       shooter.setHoodGoal(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
       intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
