@@ -21,22 +21,19 @@ public final class Constants {
         kFeeder = 4,
         kIntake = 5,
         kIntakeFlopper = 6;
-        
+
   }
 
   public static class ShooterConstants {
-    public static double kHoodMaxSpeed = 100,
-    kHoodMaxAngle = 90, 
-    kPidDeadband = 1.5;
+    public static double kHoodMaxAngle = 45;
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -0.75, 
-    kIntakeFlopperMaxSpeed = 0.5,
-    kFeederSpeed = 1, 
-    kIndexerMaxSpeed = 100,
-    kIndexerSpeed = 80,
-    koutPosition = 41;
+    public static double kIntakeSpeed = -0.75,
+        kIntakeFlopperMaxSpeed = 0.5,
+        kFeederSpeed = 0.8,
+        kIndexerSpeed = 3000,
+        koutPosition = -1.7;
   }
 
   public static class DriveConstants {
@@ -45,7 +42,7 @@ public final class Constants {
   }
 }
 
-/* 
- * shooter hood sparkmax conversion is at 110.7692307692 
+/*
+ * shooter hood sparkmax conversion is at 110.7692307692
  * intake position sparkmax conversion is at 19.125
  */

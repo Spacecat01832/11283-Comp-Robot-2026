@@ -4,15 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.*;
 
@@ -22,102 +19,24 @@ public class IntakeFeederSubsystem extends SubsystemBase {
 
   private SparkMax IntakeFlopperMotor = new SparkMax(MotorIDs.kIntakeFlopper, MotorType.kBrushless);
 
-  private ProfiledPIDController flopperPID = new ProfiledPIDController(
-      0,
-      0,
-      0,
-      new TrapezoidProfile.Constraints(IntakeConstants.kIntakeFlopperMaxSpeed, 0.1));
-  private ArmFeedforward flopperFeedforward = new ArmFeedforward(0, 0, 0);
-
-  private ProfiledPIDController indexerPID = new ProfiledPIDController(
-      0,
-      0,
-      0,
-      new TrapezoidProfile.Constraints(IntakeConstants.kIndexerMaxSpeed, 0.1));
-
   private SparkMax feederMotor = new SparkMax(MotorIDs.kFeeder, MotorType.kBrushless);
   private double feedspeed;
 
   private SparkMax indexMotor = new SparkMax(MotorIDs.kIndexer, MotorType.kBrushless);
 
-  private NetworkTable nt = NetworkTableInstance.getDefault().getTable("IntakeFeeder");
+  private SparkClosedLoopController flopperPID = IntakeFlopperMotor.getClosedLoopController();
 
-  private NetworkTableEntry intakeFlopperPositionEntry = nt.getEntry("Intake Flopper Position"),
-      intakeFlopperGoalEntry = nt.getEntry("Intake Flopper Goal"),
-      intakeFlopperPos = nt.getEntry("Intake Flopper Pos"),
-      intakeFlopperkp = nt.getEntry("intakeFlopperkp"), 
-      intakeFlopperki = nt.getEntry("intakeFlopperki"), 
-      intakeFlopperkd = nt.getEntry("intakeFlopperkd"),
-      intakeFlopperks = nt.getEntry("intakeFlopperks"),
-      intakeFlopperkv = nt.getEntry("intakeFlopperkv"),
-      intakeFlopperkg = nt.getEntry("intakeFlopperkg"),
-      intakeFlopperMaxSpeed = nt.getEntry("intakeFlopperMaxSpeed"),
-      intakeFlopperacel = nt.getEntry("intakeFlopperacel"), 
-      indexerSpeedEntry = nt.getEntry("Indexer Speed"),
-      indexerGoalEntry = nt.getEntry("Indexer Goal"),
-      indexerkp = nt.getEntry("indexerkp"),
-      indexerki = nt.getEntry("indexerki"),
-      indexerkd = nt.getEntry("indexerkd"),
-      indexerMaxSpeed = nt.getEntry("indexerMaxSpeed"),
-      indexeracel = nt.getEntry("indexeracel"),
-      indexerspeed = nt.getEntry("indexerspeed");
+  private SparkClosedLoopController indexerPID = indexMotor.getClosedLoopController();
 
   public IntakeFeederSubsystem() {
-    flopperPID.setGoal(0);
-    indexerPID.setGoal(0);
+    flopperPID.setSetpoint(0, ControlType.kPosition);
+    indexerPID.setSetpoint(0, ControlType.kPosition);
     feedspeed = 0;
-    setNetworkTableDefaults();
-  }
-
-  private void setNetworkTableDefaults() {
-    intakeFlopperkp.setDefaultDouble(0);
-    intakeFlopperki.setDefaultDouble(0);
-    intakeFlopperkd.setDefaultDouble(0);
-    intakeFlopperks.setDefaultDouble(0);
-    intakeFlopperkv.setDefaultDouble(0);
-    intakeFlopperkg.setDefaultDouble(0);
-    intakeFlopperMaxSpeed.setDefaultDouble(0);
-    intakeFlopperacel.setDefaultDouble(0);
-    intakeFlopperPos.setDefaultDouble(0);
-    indexerkp.setDefaultDouble(0);
-    indexerki.setDefaultDouble(0);
-    indexerkd.setDefaultDouble(0);
-    indexerMaxSpeed.setDefaultDouble(0);
-    indexeracel.setDefaultDouble(0);
-    indexerspeed.setDefaultDouble(0);
-  }
-
-  private void setThingsOffOfNetworkTable() {
-    flopperPID.setPID(intakeFlopperkp.getDouble(0),
-        intakeFlopperki.getDouble(0),
-        intakeFlopperkd.getDouble(0));
-    flopperPID.setConstraints(
-        new TrapezoidProfile.Constraints(intakeFlopperMaxSpeed.getDouble(0), intakeFlopperacel.getDouble(0)));
-    flopperFeedforward = new ArmFeedforward(
-        intakeFlopperks.getDouble(0),
-        intakeFlopperkv.getDouble(0),
-        intakeFlopperkg.getDouble(0));
-
-    indexerPID.setPID(indexerkp.getDouble(0), indexerki.getDouble(0), indexerkd.getDouble(0));
-    indexerPID.setConstraints(new TrapezoidProfile.Constraints(indexerMaxSpeed.getDouble(0), indexeracel.getDouble(0)));
-
-    intakeFlopperPositionEntry.setDouble(IntakeFlopperMotor.getEncoder().getPosition());
-    intakeFlopperGoalEntry.setDouble(flopperPID.getSetpoint().position);
-    indexerGoalEntry.setDouble(indexerPID.getSetpoint().position);
-    indexerSpeedEntry.setDouble(indexMotor.getEncoder().getVelocity());
-
-    setIntakeFlopper(intakeFlopperPos.getDouble(0));
-    setIndexer(indexerspeed.getDouble(0));
   }
 
   @Override
   public void periodic() {
-    setThingsOffOfNetworkTable();
-    IntakeFlopperMotor.set(
-      flopperPID.calculate(IntakeFlopperMotor.getEncoder().getPosition())
-      + flopperFeedforward.calculate(Math.toRadians(IntakeFlopperMotor.getEncoder().getPosition()), flopperPID.getSetpoint().velocity));
-    indexMotor.set(indexerPID.calculate(indexMotor.getEncoder().getVelocity()));
-    IntakeMotor.set(IntakeFlopperMotor.getEncoder().getPosition() > 2 ? IntakeConstants.kIntakeSpeed : 0.0);
+    IntakeMotor.set(IntakeFlopperMotor.getEncoder().getPosition() < -1 ? IntakeConstants.kIntakeSpeed : 0.0);
     feederMotor.set(feedspeed);
   }
 
@@ -126,15 +45,15 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   }
 
   public void setIndexer(double speed) {
-    indexerPID.setGoal(speed);
+    indexerPID.setSetpoint(speed, ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 
   public void setIntakeFlopper(double position) {
-    flopperPID.setGoal(position < 0
+    flopperPID.setSetpoint(position > 0
         ? 0
-        : position > IntakeConstants.koutPosition
+        : position < IntakeConstants.koutPosition
             ? IntakeConstants.koutPosition
-            : position);
+            : position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   public double getIntakeFlopperPosition() {
@@ -142,6 +61,6 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   }
 
   public boolean isIntakeFlopperAtGoal() {
-    return flopperPID.atGoal();
+    return flopperPID.isAtSetpoint();
   }
 }

@@ -5,17 +5,14 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.MotorIDs;
@@ -25,13 +22,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private final TalonFX shooterMotor = new TalonFX(MotorIDs.kShooter);
   private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushed);
-  private final SparkAbsoluteEncoder hoodEncoder = hoodMotor.getAbsoluteEncoder();
-
-  private ProfiledPIDController hoodPid = new ProfiledPIDController(
-      0.07,
-      0,
-      0,
-      new TrapezoidProfile.Constraints(ShooterConstants.kHoodMaxSpeed, 0.1));
+  private SparkClosedLoopController hoodPid = hoodMotor.getClosedLoopController();
 
   private PIDController ShooterLimiter = new PIDController(
       0.008,
@@ -40,91 +31,29 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0.01, 0.0098);
 
-  private NetworkTable nt = NetworkTableInstance.getDefault().getTable("Shooter");
-
-  private NetworkTableEntry hoodPositionEntry = nt.getEntry("Hood Position"),
-      hoodGoalEntry = nt.getEntry("Hood Goal"),
-      hoodkp = nt.getEntry("hoodkp"),
-      hoodki = nt.getEntry("hoodki"),
-      hoodkd = nt.getEntry("hoodkd"),
-      hoodkv = nt.getEntry("hoodkv"),
-      hoodks = nt.getEntry("hoodks"),
-      hoodkg = nt.getEntry("hoodkg"),
-      hoodacel = nt.getEntry("hoodacel"),
-      hoodmspeed = nt.getEntry("hoodmaxspeed"),
-      shooterSpeedEntry = nt.getEntry("Shooter Speed"),
-      shooterGoalEntry = nt.getEntry("Shooter Goal"),
-      shooterkp = nt.getEntry("shooterkp"),
-      shooterki = nt.getEntry("shooterki"),
-      shooterkd = nt.getEntry("shooterkd"),
-      shooterks = nt.getEntry("shooterks"),
-      shooterkv = nt.getEntry("shooterkv"),
-      shooterspeed = nt.getEntry("shootersetSpeed"),
-      hoodposition = nt.getEntry("hoodposition");
+  
 
   public ShooterSubsystem() {
-    hoodPid.setGoal(0);
-    hoodPid.setTolerance(ShooterConstants.kPidDeadband);
     ShooterLimiter.setSetpoint(0);
-    //setNetworkTableDefaults();
-  }
-
-  private void setNetworkTableDefaults() {
-    hoodkp.setDefaultDouble(0);
-    hoodki.setDefaultDouble(0);
-    hoodkd.setDefaultDouble(0);
-    hoodkv.setDefaultDouble(0);
-    hoodks.setDefaultDouble(0);
-    hoodkg.setDefaultDouble(0);
-    shooterkp.setDefaultDouble(0);
-    shooterki.setDefaultDouble(0);
-    shooterkd.setDefaultDouble(0);
-    shooterks.setDefaultDouble(0);
-    shooterkv.setDefaultDouble(0);
-    shooterspeed.setDefaultDouble(0);
-    hoodposition.setDefaultDouble(0);
-    hoodacel.setDefaultDouble(0);
-    hoodmspeed.setDefaultDouble(0);
-  }
-
-  private void setThingsOffOfNetworkTable() {
-    hoodPid.setPID(hoodkp.getDouble(0),
-        hoodki.getDouble(0),
-        hoodkd.getDouble(0));
-    hoodPid.setConstraints(new TrapezoidProfile.Constraints(hoodmspeed.getDouble(0), hoodacel.getDouble(0)));
-
-    ShooterLimiter.setPID(shooterkp.getDouble(0), shooterki.getDouble(0), shooterkd.getDouble(0));
-    shooterFeed.setKs(shooterks.getDouble(0));
-    shooterFeed.setKv(shooterkv.getDouble(0));
-
-    hoodPositionEntry.setDouble(hoodEncoder.getPosition());
-    hoodGoalEntry.setDouble(hoodPid.getSetpoint().position);
-    shooterGoalEntry.setDouble(ShooterLimiter.getSetpoint());
-    shooterSpeedEntry.setDouble(shooterMotor.getVelocity().getValueAsDouble());
-
-    setHoodGoal(hoodposition.getDouble(0));
-    setShooterSpeed(shooterspeed.getDouble(0));
   }
 
   @Override
   public void periodic() {
-    //setThingsOffOfNetworkTable();
-    hoodMotor.set(hoodPid.calculate(hoodEncoder.getPosition()));
     shooterMotor.set(
         ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
             + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
   }
 
   public void setHoodGoal(double angle) {
-    hoodPid.setGoal(angle < 1.5
+    hoodPid.setSetpoint(angle < 1.5
         ? 1.5
         : angle > ShooterConstants.kHoodMaxAngle
             ? ShooterConstants.kHoodMaxAngle
-            : angle);
+            : angle, ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 
   public boolean atHoodGoal() {
-    return hoodPid.atGoal();
+    return hoodPid.isAtSetpoint();
   }
 
   public double getHoodPosition() {
