@@ -44,7 +44,7 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("speed", shooterMotor.getVelocity().getValueAsDouble());
     shooterMotor.set(
         ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
-            + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
+            + shooterFeed.calculate(ShooterLimiter.getSetpoint()));
   }
 
   public void setHoodGoal(double angle) {

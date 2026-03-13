@@ -4,8 +4,10 @@
 
 package frc.robot.commands.auto;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.shooter.Shoot;
@@ -19,15 +21,12 @@ import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 public class InBoxAuto extends SequentialCommandGroup {
   /** Creates a new InBoxAuto. */
   public InBoxAuto(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intakeFeeder) {
-    new Rotation2d();
     addCommands(
-        drivetrain.resetposefrompath("alintrenchtoshooting0"),
-        drivetrain.followpath("alintrenchtoshooting0"),
-        Commands.race(
-          new Shoot(drivetrain, shooter, intakeFeeder),
-          new WaitCommand(1)
-        ),
-        drivetrain.followpath("shooting0toinbox")
-    );
+        AutoBuilder.resetOdom(drivetrain.pathfromfile("attosa").getPathPoses().get(0)),
+        AutoBuilder.followPath(drivetrain.pathfromfile("attosa")),
+        new ParallelDeadlineGroup(
+            new WaitCommand(1),
+            new Shoot(drivetrain, shooter, intakeFeeder)),
+        AutoBuilder.followPath(drivetrain.pathfromfile("satoib")));
   }
 }

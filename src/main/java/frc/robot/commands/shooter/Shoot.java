@@ -33,8 +33,8 @@ public class Shoot extends Command {
   public void execute() {
     var x = drivetrain.distanceToPose(
         DriverStation.getAlliance().get() == Alliance.Red
-            ? drivetrain.pointfrompath("RedHub", 0)
-            : drivetrain.pointfrompath("BlueHub", 0));
+            ? drivetrain.pathfromfile("RedHub").getPoint(0).position
+            : drivetrain.pathfromfile("BlueHub").getPoint(0).position);
     shooter.setShooterSpeed((2.6756 * (x * x) + -3.3779 * x + 61.054));
     if (shooter.atShooterGoal()) {
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
@@ -45,7 +45,7 @@ public class Shoot extends Command {
   @Override
   public void end(boolean interrupted) {
     shooter.setShooterSpeed(0.0);
-    shooter.setHoodGoal(0.0);
+    // shooter.setHoodGoal(0.0);
     intake.setIndexer(0.0);
     intake.setFeeder(0.0);
   }

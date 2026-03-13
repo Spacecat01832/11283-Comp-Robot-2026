@@ -29,7 +29,7 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -0.85,
+    public static double kIntakeSpeed = -0.9,
         kIntakeFlopperMaxSpeed = 0.5,
         kFeederSpeed = 0.8,
         kIndexerSpeed = 3000,
@@ -38,7 +38,7 @@ public final class Constants {
 
   public static class DriveConstants {
     public static double kMaxSpeed = 0.48 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-        kMaxAngularRate = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
+        kMaxAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
   }
 }
 

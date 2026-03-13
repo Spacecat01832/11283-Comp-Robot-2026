@@ -7,19 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "alintrenchtoshooting0"
+            "pathName": "attosa"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "shooting0toinbox"
+            "pathName": "satoib"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "inboxtoshooting0"
+            "pathName": "ibtosa"
           }
         }
       ]

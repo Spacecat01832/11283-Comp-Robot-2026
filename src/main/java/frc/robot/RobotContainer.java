@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
+import frc.robot.commands.auto.InBoxAuto;
 import frc.robot.commands.intakeFeeder.*;
 import frc.robot.commands.shooter.Shoot;
 import frc.robot.generated.TunerConstants;
@@ -29,7 +30,7 @@ public class RobotContainer {
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1)
+      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.15)
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -52,10 +53,12 @@ public class RobotContainer {
   }
 
   public final SendableChooser<Command> AutoChooser = new SendableChooser<>();
+  private InBoxAuto inbox = new InBoxAuto(drivetrain, shooter, intakeFeeder);
 
   private void configureAuto() {
     AutoChooser.setDefaultOption("None", drivetrain.runOnce(drivetrain::seedFieldCentric));
-    SmartDashboard.putData(AutoChooser);
+    AutoChooser.addOption("inbox", inbox);
+    SmartDashboard.putData("AutoChooser", AutoChooser);
   }
 
   private void configureBindings() {
@@ -94,7 +97,7 @@ public class RobotContainer {
         .onTrue(setIntakePosition(IntakeConstants.koutPosition))
         .onFalse(setIntakePosition(0));
 
-    driverController.rightBumper().whileTrue(
+    driverController.rightBumper().onTrue(
         shoot)
         .onFalse(
             Commands.runOnce(() -> {
