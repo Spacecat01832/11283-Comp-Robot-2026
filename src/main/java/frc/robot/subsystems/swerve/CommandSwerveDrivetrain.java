@@ -145,8 +145,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
-            configureAutoBuilder();
         }
+        configureAutoBuilder();
     }
 
     /**
@@ -171,8 +171,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, odometryUpdateFrequency, modules);
         if (Utils.isSimulation()) {
             startSimThread();
-            configureAutoBuilder();
         }
+        configureAutoBuilder();
     }
 
     /**
@@ -212,8 +212,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 modules);
         if (Utils.isSimulation()) {
             startSimThread();
-            configureAutoBuilder();
         }
+        configureAutoBuilder();
     }
 
     public void configureAutoBuilder() {
@@ -300,7 +300,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-        
+
         SmartDashboard.putNumber("distance", distanceToPose(pathfromfile("RedHub").getPoint(0).position));
     }
 
@@ -397,7 +397,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     // public double angleToPose(Pose2d targetPose) {
-    //     var currentPose = getState().Pose;
+    // var currentPose = getState().Pose;
     // }
 
 }

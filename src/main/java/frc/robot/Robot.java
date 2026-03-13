@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.pathfinding.LocalADStar;
+import com.pathplanner.lib.pathfinding.Pathfinding;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -29,8 +32,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-
     m_robotContainer = new RobotContainer();
+
+    Pathfinding.setPathfinder(new LocalADStar());
 
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);

@@ -35,7 +35,7 @@ public class ShooterSubsystem extends SubsystemBase {
   
 
   public ShooterSubsystem() {
-    ShooterLimiter.setTolerance(1);
+    ShooterLimiter.setTolerance(0.5);
     ShooterLimiter.setSetpoint(0);
   }
 

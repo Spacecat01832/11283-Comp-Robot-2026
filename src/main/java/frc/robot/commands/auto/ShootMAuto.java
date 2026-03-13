@@ -6,10 +6,7 @@ package frc.robot.commands.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.shooter.Shoot;
 import frc.robot.subsystems.IntakeFeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -18,15 +15,14 @@ import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class InBoxAuto extends SequentialCommandGroup {
+public class ShootMAuto extends SequentialCommandGroup {
   /** Creates a new InBoxAuto. */
-  public InBoxAuto(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intakeFeeder) {
+  public ShootMAuto(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intakeFeeder) {
     addCommands(
-        AutoBuilder.resetOdom(drivetrain.pathfromfile("attosa").getPathPoses().get(0)),
-        AutoBuilder.followPath(drivetrain.pathfromfile("attosa")),
+        AutoBuilder.resetOdom(drivetrain.pathfromfile("mtosc").getPathPoses().get(0)),
+        AutoBuilder.followPath(drivetrain.pathfromfile("mtosc")),
         new ParallelDeadlineGroup(
-            new WaitCommand(1),
-            new Shoot(drivetrain, shooter, intakeFeeder)),
-        AutoBuilder.followPath(drivetrain.pathfromfile("satoib")));
+            new WaitCommand(2),
+            new Shoot(drivetrain, shooter, intakeFeeder)));
   }
 }

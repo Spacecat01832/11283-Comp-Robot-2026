@@ -15,7 +15,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
-import frc.robot.commands.auto.InBoxAuto;
+import frc.robot.commands.auto.ShootAAuto;
+import frc.robot.commands.auto.ShootBAuto;
 import frc.robot.commands.intakeFeeder.*;
 import frc.robot.commands.shooter.Shoot;
 import frc.robot.generated.TunerConstants;
@@ -30,7 +31,7 @@ public class RobotContainer {
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.15)
+      .withDeadband(DriveConstants.kMaxSpeed * 0.2).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.2)
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -53,11 +54,13 @@ public class RobotContainer {
   }
 
   public final SendableChooser<Command> AutoChooser = new SendableChooser<>();
-  private InBoxAuto inbox = new InBoxAuto(drivetrain, shooter, intakeFeeder);
+  private ShootAAuto shoota = new ShootAAuto(drivetrain, shooter, intakeFeeder);
+  private ShootBAuto shootb = new ShootBAuto(drivetrain, shooter, intakeFeeder);
 
   private void configureAuto() {
     AutoChooser.setDefaultOption("None", drivetrain.runOnce(drivetrain::seedFieldCentric));
-    AutoChooser.addOption("inbox", inbox);
+    AutoChooser.addOption("shoota", shoota);
+    AutoChooser.addOption("shootb", shootb);
     SmartDashboard.putData("AutoChooser", AutoChooser);
   }
 
