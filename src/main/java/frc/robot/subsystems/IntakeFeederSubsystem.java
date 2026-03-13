@@ -29,8 +29,6 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   private SparkClosedLoopController indexerPID = indexMotor.getClosedLoopController();
 
   public IntakeFeederSubsystem() {
-    flopperPID.setSetpoint(0, ControlType.kPosition);
-    indexerPID.setSetpoint(0, ControlType.kPosition);
     feedspeed = 0;
   }
 

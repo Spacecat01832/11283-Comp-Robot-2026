@@ -8,6 +8,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -46,6 +48,11 @@ public class RobotContainer {
 
   final SetShooterSpeed setShooterSpeed(double speed) {
     return new SetShooterSpeed(shooter, speed);
+  }
+
+  private double shooterMath(double x) {
+    var y = (2.6756 * (x * x) + -3.3779 * x + 61.054);
+    return y;
   }
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -99,17 +106,34 @@ public class RobotContainer {
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
-  driverController.rightBumper()
-    .onTrue(setIntakePosition(IntakeConstants.koutPosition))
-    .onFalse(setIntakePosition(0));
+    driverController.leftBumper()
+        .onTrue(setIntakePosition(IntakeConstants.koutPosition))
+        .onFalse(setIntakePosition(0));
 
-  driverController.leftBumper().whileTrue(
-    Commands.run(() -> {
-      shooter.setShooterSpeed(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
-      shooter.setHoodGoal(drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
-      intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
-      intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
-    }, shooter, intakeFeeder));
+    driverController.rightBumper().whileTrue(
+        Commands.run(() -> {
+          // shooter.setShooterSpeed(65); //2m
+          // shooter.setShooterSpeed(75); //3m
+          // shooter.setShooterSpeed(96); //4.3m
+          shooter.setShooterSpeed(
+              shooterMath(
+                  drivetrain.distanceToPose(
+                      DriverStation.getAlliance().get() == Alliance.Red
+                          ? drivetrain.pointfrompath("RedHub", 0)
+                          : drivetrain.pointfrompath("BlueHub", 0))));
+          // shooter.setHoodGoal(35);
+          if (shooter.atShooterGoal()) {
+            intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+            intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+          }
+        }, shooter, intakeFeeder))
+        .whileFalse(
+            Commands.run(() -> {
+              shooter.setShooterSpeed(0);
+              shooter.setHoodGoal(0);
+              intakeFeeder.setIndexer(0);
+              intakeFeeder.setFeeder(0);
+            }, shooter, intakeFeeder));
   }
 
   public Command getAutonomousCommand() {

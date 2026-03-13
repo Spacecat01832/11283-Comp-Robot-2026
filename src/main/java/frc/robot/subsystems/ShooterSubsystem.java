@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.MotorIDs;
@@ -34,11 +35,13 @@ public class ShooterSubsystem extends SubsystemBase {
   
 
   public ShooterSubsystem() {
+    ShooterLimiter.setTolerance(1);
     ShooterLimiter.setSetpoint(0);
   }
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("speed", shooterMotor.getVelocity().getValueAsDouble());
     shooterMotor.set(
         ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
             + shooterFeed.calculate(shooterMotor.getVelocity().getValueAsDouble()));
@@ -63,4 +66,8 @@ public class ShooterSubsystem extends SubsystemBase {
   public void setShooterSpeed(double speed) {
     ShooterLimiter.setSetpoint(speed);
   }
+
+public boolean atShooterGoal() {
+  return ShooterLimiter.atSetpoint();
+}
 }

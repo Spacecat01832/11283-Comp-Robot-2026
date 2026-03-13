@@ -30,6 +30,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -298,6 +299,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        
+        SmartDashboard.putNumber("distance", distanceToPose(pointfrompath("RedHub", 0)));
     }
 
     private void startSimThread() {
@@ -397,7 +400,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         var currentPose = getState().Pose;
         var height = targetPose.getY() - currentPose.getY();
         var width = targetPose.getX() - currentPose.getX();
-        return Math.hypot(width, height);
+        return Math.hypot(width, height) - 0.2;
     }
 
     // public double angleToPose(Pose2d targetPose) {

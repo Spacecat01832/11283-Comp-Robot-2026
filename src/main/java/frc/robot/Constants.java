@@ -29,7 +29,7 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -0.75,
+    public static double kIntakeSpeed = -0.85,
         kIntakeFlopperMaxSpeed = 0.5,
         kFeederSpeed = 0.8,
         kIndexerSpeed = 3000,
@@ -37,12 +37,16 @@ public final class Constants {
   }
 
   public static class DriveConstants {
-    public static double kMaxSpeed = 0.6 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+    public static double kMaxSpeed = 0.48 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
         kMaxAngularRate = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
   }
 }
 
 /*
  * shooter hood sparkmax conversion is at 110.7692307692
- * intake position sparkmax conversion is at 19.125
+ * Shooter Speed vs Distance 3-12-2026 as of 2pm
+ * A = 2.6756 (x^2 term)
+ * B = -3.3779 (x term)
+ * C = 61.054 (offset)
+ * Formula... speed setting = A*(x^2) + B*x + C
  */
