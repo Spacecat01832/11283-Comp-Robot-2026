@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -388,6 +389,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return null;
     }
 
+    public Command followpath(String pathname) {
+        var path = pathfromfile(pathname);
+        if (path != null) {
+            return AutoBuilder.followPath(path);
+        }
+        return Commands.none();
+    }
+
     public Translation2d pointfrompath(String pathname, int point) {
         var path = pathfromfile(pathname);
         if (path != null) {
@@ -396,11 +405,27 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return new Translation2d();
     }
 
+    public Rotation2d rotationfrompath(String pathname, int point) {
+        var path = pathfromfile(pathname);
+        if (path != null) {
+            return path.getPoint(point).rotationTarget.rotation();
+        }
+        return new Rotation2d();
+    }
+
     public double distanceToPose(Translation2d targetPose) {
         var currentPose = getState().Pose;
         var height = targetPose.getY() - currentPose.getY();
         var width = targetPose.getX() - currentPose.getX();
         return Math.hypot(width, height) - 0.2;
+    }
+
+    public Command resetposefrompath(String pathname) {
+        var path = pathfromfile(pathname);
+        if (path != null) {
+            return runOnce(() -> resetPose(new Pose2d(path.getPoint(0).position, path.getPoint(0).rotationTarget.rotation())));
+        }
+        return Commands.none();
     }
 
     // public double angleToPose(Pose2d targetPose) {

@@ -8,8 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,23 +16,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
 import frc.robot.commands.intakeFeeder.*;
+import frc.robot.commands.shooter.Shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 
 public class RobotContainer {
-
-  private final ShooterSubsystem shooter = new ShooterSubsystem();
-  private final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
-
-  private final SetIntakePosition setIntakePosition(double position) {
-    return new SetIntakePosition(intakeFeeder, position);
-  }
-
-  private double shooterMath(double x) {
-    var y = (2.6756 * (x * x) + -3.3779 * x + 61.054);
-    return y;
-  }
 
   final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
   // final CommandXboxController buttonController = new
@@ -50,6 +37,14 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(DriveConstants.kMaxSpeed);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  private final ShooterSubsystem shooter = new ShooterSubsystem();
+  private final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
+
+  private final SetIntakePosition setIntakePosition(double position) {
+    return new SetIntakePosition(intakeFeeder, position);
+  }
+
+  private final Shoot shoot = new Shoot(drivetrain, shooter, intakeFeeder);
 
   public RobotContainer() {
     configureBindings();
@@ -100,29 +95,11 @@ public class RobotContainer {
         .onFalse(setIntakePosition(0));
 
     driverController.rightBumper().whileTrue(
-        Commands.run(() -> {
-          // shooter.setShooterSpeed(65); //2m
-          // shooter.setShooterSpeed(75); //3m
-          // shooter.setShooterSpeed(96); //4.3m
-          shooter.setShooterSpeed(
-              shooterMath(
-                  drivetrain.distanceToPose(
-                      DriverStation.getAlliance().get() == Alliance.Red
-                          ? drivetrain.pointfrompath("RedHub", 0)
-                          : drivetrain.pointfrompath("BlueHub", 0))));
-          // shooter.setHoodGoal(35);
-          if (shooter.atShooterGoal()) {
-            intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
-            intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
-          }
-        }, shooter, intakeFeeder))
-        .whileFalse(
-            Commands.run(() -> {
-              shooter.setShooterSpeed(0);
-              shooter.setHoodGoal(0);
-              intakeFeeder.setIndexer(0);
-              intakeFeeder.setFeeder(0);
-            }, shooter, intakeFeeder));
+        shoot)
+        .onFalse(
+            Commands.runOnce(() -> {
+              shoot.cancel();
+            }, shooter, intakeFeeder, drivetrain));
   }
 
   public Command getAutonomousCommand() {
