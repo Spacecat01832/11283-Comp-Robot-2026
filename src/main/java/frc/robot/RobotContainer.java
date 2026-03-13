@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,37 +18,17 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
 import frc.robot.commands.intakeFeeder.*;
-import frc.robot.commands.shooter.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.Auto.AutoSubsystem;
 import frc.robot.subsystems.swerve.CommandSwerveDrivetrain;
 
 public class RobotContainer {
 
-  final AutoSubsystem auto = new AutoSubsystem();
+  private final ShooterSubsystem shooter = new ShooterSubsystem();
+  private final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
 
-  final ShooterSubsystem shooter = new ShooterSubsystem();
-  final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
-
-  final SetFeederSpeed setFeederSpeed(double speed) {
-    return new SetFeederSpeed(intakeFeeder, speed);
-  }
-
-  final SetIndexerSpeed setIndexerSpeed(double speed) {
-    return new SetIndexerSpeed(intakeFeeder, speed);
-  }
-
-  final SetIntakePosition setIntakePosition(double position) {
+  private final SetIntakePosition setIntakePosition(double position) {
     return new SetIntakePosition(intakeFeeder, position);
-  }
-
-  final SetHoodPosition setHoodPosition(double position) {
-    return new SetHoodPosition(shooter, position);
-  }
-
-  final SetShooterSpeed setShooterSpeed(double speed) {
-    return new SetShooterSpeed(shooter, speed);
   }
 
   private double shooterMath(double x) {
@@ -72,6 +53,14 @@ public class RobotContainer {
 
   public RobotContainer() {
     configureBindings();
+    configureAuto();
+  }
+
+  public final SendableChooser<Command> AutoChooser = new SendableChooser<>();
+
+  private void configureAuto() {
+    AutoChooser.setDefaultOption("None", drivetrain.runOnce(drivetrain::seedFieldCentric));
+    SmartDashboard.putData(AutoChooser);
   }
 
   private void configureBindings() {
@@ -137,10 +126,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return auto.getSelectedAuto();
-  }
-
-  public void periodic() {
-    SmartDashboard.putNumber("distance", drivetrain.distanceToPose(drivetrain.pointfrompath("HubPositions", 0)));
+    return AutoChooser.getSelected();
   }
 }
