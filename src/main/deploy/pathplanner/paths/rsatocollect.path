@@ -8,10 +8,10 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.3315026833631483,
-        "y": 0.40862254025044664
+        "x": 0.8607042253521135,
+        "y": 0.34632042253521145
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "shooting0"
     },
     {
@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 3.651735241502683,
-        "y": 0.6520035778175304
+        "y": 0.6520035778175305
       },
       "nextControl": {
         "x": 5.651735241502683,
@@ -88,11 +88,16 @@
       "name": "IntakeIn",
       "waypointRelativePos": 2.949044585987261,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeIn"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
+    "maxVelocity": 1.5,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,

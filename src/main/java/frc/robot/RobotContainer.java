@@ -117,7 +117,7 @@ public class RobotContainer {
               shooter.setShooterSpeed(0);
             }, shooter, intakeFeeder));
 
-    driverController.rightBumper().whileTrue(
+    driverController.rightBumper().onTrue(
         shoot)
         .onFalse(
             Commands.runOnce(() -> {
