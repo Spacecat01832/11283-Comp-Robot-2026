@@ -17,6 +17,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.EventMarker;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
@@ -389,11 +390,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return null;
     }
 
+    public EventMarker markerfrompath(String pathname, String triggername) {
+        var path = pathfromfile(pathname);
+        var markers = path.getEventMarkers();
+        for (EventMarker marker : markers) {
+            if (marker.triggerName().equals(triggername)) {
+                return marker;
+            }
+        }
+        return new EventMarker("dont", 0);
+    }
+
     public double distanceToPose(Translation2d targetPose) {
         var currentPose = getState().Pose;
         var height = targetPose.getY() - currentPose.getY();
         var width = targetPose.getX() - currentPose.getX();
-        return Math.hypot(width, height) - 0.2;
+        return Math.hypot(width, height) - 0.16;
     }
 
     // public double angleToPose(Pose2d targetPose) {

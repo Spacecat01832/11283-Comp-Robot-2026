@@ -5,9 +5,13 @@
 package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,8 +19,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
-import frc.robot.commands.auto.ShootAAuto;
-import frc.robot.commands.auto.ShootBAuto;
 import frc.robot.commands.intakeFeeder.*;
 import frc.robot.commands.shooter.Shoot;
 import frc.robot.generated.TunerConstants;
@@ -48,20 +50,19 @@ public class RobotContainer {
 
   private final Shoot shoot = new Shoot(drivetrain, shooter, intakeFeeder);
 
+  public SendableChooser<Command> AutoChooser;
+
   public RobotContainer() {
+    registerCommands();
     configureBindings();
-    configureAuto();
+    AutoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("AutoChooser", AutoChooser);
   }
 
-  public final SendableChooser<Command> AutoChooser = new SendableChooser<>();
-  private ShootAAuto shoota = new ShootAAuto(drivetrain, shooter, intakeFeeder);
-  private ShootBAuto shootb = new ShootBAuto(drivetrain, shooter, intakeFeeder);
-
-  private void configureAuto() {
-    AutoChooser.setDefaultOption("None", drivetrain.runOnce(drivetrain::seedFieldCentric));
-    AutoChooser.addOption("shoota", shoota);
-    AutoChooser.addOption("shootb", shootb);
-    SmartDashboard.putData("AutoChooser", AutoChooser);
+  private void registerCommands(){
+    NamedCommands.registerCommand("IntakeOut", setIntakePosition(IntakeConstants.koutPosition));
+    NamedCommands.registerCommand("IntakeIn", setIntakePosition(0));
+    NamedCommands.registerCommand("shoot", shoot);
   }
 
   private void configureBindings() {
@@ -100,7 +101,23 @@ public class RobotContainer {
         .onTrue(setIntakePosition(IntakeConstants.koutPosition))
         .onFalse(setIntakePosition(0));
 
-    driverController.rightBumper().onTrue(
+    driverController.rightTrigger(0.3).onTrue(
+        Commands.run(() -> {
+          var x = drivetrain.distanceToPose(
+              DriverStation.getAlliance().get() == Alliance.Red
+                  ? drivetrain.pathfromfile("RedHub").getPoint(0).position
+                  : drivetrain.pathfromfile("BlueHub").getPoint(0).position);
+          shooter.setShooterSpeed((2.6589 * (x * x) + -4.7943 * x + 65.453));
+          intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+          intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+        }, shooter, intakeFeeder)).onFalse(
+            Commands.run(() -> {
+              intakeFeeder.setFeeder(0);
+              intakeFeeder.setIndexer(0);
+              shooter.setShooterSpeed(0);
+            }, shooter, intakeFeeder));
+
+    driverController.rightBumper().whileTrue(
         shoot)
         .onFalse(
             Commands.runOnce(() -> {

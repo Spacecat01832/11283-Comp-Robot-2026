@@ -35,7 +35,7 @@ public class Shoot extends Command {
         DriverStation.getAlliance().get() == Alliance.Red
             ? drivetrain.pathfromfile("RedHub").getPoint(0).position
             : drivetrain.pathfromfile("BlueHub").getPoint(0).position);
-    shooter.setShooterSpeed((2.3411 * (x * x) + -1.7057 * x + 59.047));
+    shooter.setShooterSpeed((2.6589 * (x * x) + -4.7943 * x + 65.453));
     if (shooter.atShooterGoal()) {
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
       intake.setFeeder(IntakeConstants.kFeederSpeed);
