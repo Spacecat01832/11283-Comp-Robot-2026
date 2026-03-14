@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.136797853309481,
+        "y": 4.043112701252236
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.7209123434704834,
+        "y": 5.535849731663685
+      },
+      "isLocked": false,
+      "linkedName": "shooting2"
+    },
+    {
+      "anchor": {
+        "x": -0.5241681574239718,
+        "y": 7.531574239713775
+      },
+      "prevControl": {
+        "x": 0.27087656529516935,
+        "y": 7.5964758497316645
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "inbox"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 163.83550084774305
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.49285714285714216,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeOut",
+      "waypointRelativePos": 0.19047619047619058,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOut"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 1.5,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 177.8789036033385
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.3097038999588319
+  },
+  "useDefaultConstraints": true
+}
