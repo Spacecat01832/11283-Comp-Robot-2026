@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": -0.5241681574239718,
+        "x": -0.625,
         "y": 7.531574239713775
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.065921288014311,
-        "y": 7.547799642218246
+        "x": 2.055670840786801,
+        "y": 7.482898032205813
       },
       "isLocked": false,
       "linkedName": "inbox"
@@ -59,7 +59,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -24.610835219718307
+    "rotation": -19.786504128521347
   },
   "reversed": false,
   "folder": null,
