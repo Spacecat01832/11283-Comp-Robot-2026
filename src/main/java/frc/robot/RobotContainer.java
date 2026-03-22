@@ -51,7 +51,9 @@ public class RobotContainer {
     return new SetIntakePosition(intakeFeeder, position);
   }
 
-  private final Shoot shoot;
+  private final Shoot shoot(double x, double y) {
+    return new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation, x, y);
+  }
 
   private boolean isRed = false;
 
@@ -66,12 +68,9 @@ public class RobotContainer {
   public RobotContainer() {
     // Determine alliance and hub translation first so commands that depend on
     // them can be constructed before binding buttons.
-  isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     hubTranslation = isRed ? drivetrain.pathfromfile("RedHub").getPoint(0).position
         : drivetrain.pathfromfile("BlueHub").getPoint(0).position;
-
-    // Construct the shoot command now so it can be registered and bound.
-    shoot = new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation);
 
     // Register commands and configure button bindings.
     registerCommands();
@@ -85,10 +84,10 @@ public class RobotContainer {
     shooterspeed.setDouble(0);
   }
 
-  private void registerCommands(){
+  private void registerCommands() {
     NamedCommands.registerCommand("IntakeOut", setIntakePosition(IntakeConstants.koutPosition));
     NamedCommands.registerCommand("IntakeIn", setIntakePosition(0));
-    NamedCommands.registerCommand("shoot", shoot);
+    NamedCommands.registerCommand("shoot",shoot(0, 0));
   }
 
   private void configureBindings() {
@@ -129,23 +128,22 @@ public class RobotContainer {
 
     driverController.rightTrigger(0.3).onTrue(
         Commands.run(() -> {
-          //var x = drivetrain.distanceToPose(hubTranslation);
-          shooter.setShooterSpeed(shooterspeed.getDouble(0));
-          intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+          shooter.setShooterSpeed(0);
           intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+          intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
         }, shooter, intakeFeeder)).onFalse(
             Commands.run(() -> {
-              intakeFeeder.setFeeder(0);
-              intakeFeeder.setIndexer(0);
               shooter.setShooterSpeed(0);
+              intakeFeeder.setIndexer(0);
+              intakeFeeder.setFeeder(0);
             }, shooter, intakeFeeder));
 
-    driverController.rightBumper().onTrue(
-        shoot)
+    driverController.rightBumper().whileTrue(
+        shoot(driverController.getLeftY(), driverController.getLeftX()))
         .onFalse(
-            Commands.runOnce(() -> {
-              shoot.cancel();
-            }, shooter, intakeFeeder, drivetrain));
+            Commands.run(() -> {
+              shoot(0, 0).cancel();
+            }));
   }
 
   public Command getAutonomousCommand() {

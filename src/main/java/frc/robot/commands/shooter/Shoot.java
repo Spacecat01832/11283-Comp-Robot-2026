@@ -4,6 +4,9 @@
 
 package frc.robot.commands.shooter;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
@@ -18,13 +21,18 @@ public class Shoot extends Command {
   ShooterSubsystem shooter;
   IntakeFeederSubsystem intake;
   Translation2d hubTranslation;
+  double x, y;
+  PIDController zController = new PIDController(1, 0, 0);
 
-  public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake, Translation2d hubTranslation) {
+  public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake,
+      Translation2d hubTranslation, double x, double y) {
     addRequirements(drivetrain, shooter);
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     this.intake = intake;
     this.hubTranslation = hubTranslation;
+    this.x = x;
+    this.y = y;
   }
 
   @Override
@@ -33,9 +41,15 @@ public class Shoot extends Command {
 
   @Override
   public void execute() {
+    drivetrain.setControl(new SwerveRequest.FieldCentric()
+        .withRotationalRate(
+            zController.calculate(drivetrain.getState().Pose.getRotation().getDegrees(),
+                drivetrain.angleToPose(hubTranslation)))
+        .withVelocityX(x)
+        .withVelocityY(y));
     var x = drivetrain.distanceToPose(hubTranslation);
     shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
-    if (shooter.atShooterGoal()) {
+    if (shooter.atShooterGoal() && zController.atSetpoint()) {
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
       intake.setFeeder(IntakeConstants.kFeederSpeed);
     }
