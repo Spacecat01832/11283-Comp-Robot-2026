@@ -32,7 +32,21 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    m_robotContainer = new RobotContainer();
+    // log uncaught exceptions from any thread so the sim console shows them
+    Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
+      ex.printStackTrace();
+      DriverStation.reportError("Uncaught exception in thread " + thread.getName() + ": " + ex.getMessage(),
+          ex.getStackTrace());
+    });
+
+    try {
+      m_robotContainer = new RobotContainer();
+    } catch (Throwable t) {
+      // If the RobotContainer constructor throws, we get immediate trace
+      t.printStackTrace();
+      DriverStation.reportError("RobotContainer init failed: " + t.getMessage(), t.getStackTrace());
+      throw t; // rethrow so behavior is unchanged
+    }
 
     Pathfinding.setPathfinder(new LocalADStar());
 

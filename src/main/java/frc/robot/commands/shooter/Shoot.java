@@ -4,10 +4,12 @@
 
 package frc.robot.commands.shooter;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeFeederSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -17,12 +19,14 @@ public class Shoot extends Command {
   CommandSwerveDrivetrain drivetrain;
   ShooterSubsystem shooter;
   IntakeFeederSubsystem intake;
+  Translation2d hubTranslation;
 
-  public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake) {
+  public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake, Translation2d hubTranslation) {
     addRequirements(drivetrain, shooter);
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     this.intake = intake;
+    this.hubTranslation = hubTranslation;
   }
 
   @Override
@@ -31,11 +35,8 @@ public class Shoot extends Command {
 
   @Override
   public void execute() {
-    var x = drivetrain.distanceToPose(
-        DriverStation.getAlliance().get() == Alliance.Red
-            ? drivetrain.pathfromfile("RedHub").getPoint(0).position
-            : drivetrain.pathfromfile("BlueHub").getPoint(0).position);
-    shooter.setShooterSpeed((2.6589 * (x * x) + -4.7943 * x + 65.453));
+    var x = drivetrain.distanceToPose(hubTranslation);
+    shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
     if (shooter.atShooterGoal()) {
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
       intake.setFeeder(IntakeConstants.kFeederSpeed);

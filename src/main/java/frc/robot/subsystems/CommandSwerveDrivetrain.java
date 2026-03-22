@@ -301,8 +301,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
-
-        SmartDashboard.putNumber("distance", distanceToPose(pathfromfile("RedHub").getPoint(0).position));
     }
 
     private void startSimThread() {
@@ -408,8 +406,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return Math.hypot(width, height) - 0.16;
     }
 
-    // public double angleToPose(Pose2d targetPose) {
-    // var currentPose = getState().Pose;
-    // }
+    public double angleToPose(Translation2d targetPose) {
+    var currentPose = getState().Pose;
+    var targetpose  = targetPose;
+    double angleToHub = Math.atan2(targetpose.getY() - currentPose.getY(), targetpose.getX() - currentPose.getX());
+    return Math.toDegrees(angleToHub);
+    }
 
 }

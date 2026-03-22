@@ -10,6 +10,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -47,15 +51,38 @@ public class RobotContainer {
     return new SetIntakePosition(intakeFeeder, position);
   }
 
-  private final Shoot shoot = new Shoot(drivetrain, shooter, intakeFeeder);
+  private final Shoot shoot;
+
+  private boolean isRed = false;
+
+  private Translation2d hubTranslation = new Translation2d(0, 0);
 
   public SendableChooser<Command> AutoChooser;
 
+  public NetworkTable tbl = NetworkTableInstance.getDefault().getTable("robot");
+
+  public NetworkTableEntry shooterspeed;
+
   public RobotContainer() {
+    // Determine alliance and hub translation first so commands that depend on
+    // them can be constructed before binding buttons.
+  isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    hubTranslation = isRed ? drivetrain.pathfromfile("RedHub").getPoint(0).position
+        : drivetrain.pathfromfile("BlueHub").getPoint(0).position;
+
+    // Construct the shoot command now so it can be registered and bound.
+    shoot = new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation);
+
+    // Register commands and configure button bindings.
     registerCommands();
     configureBindings();
+
+    // Build the auto chooser (uses any registered NamedCommands)
     AutoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("AutoChooser", AutoChooser);
+
+    shooterspeed = tbl.getEntry("shooterspeed");
+    shooterspeed.setDouble(0);
   }
 
   private void registerCommands(){
@@ -102,11 +129,8 @@ public class RobotContainer {
 
     driverController.rightTrigger(0.3).onTrue(
         Commands.run(() -> {
-          var x = drivetrain.distanceToPose(
-              DriverStation.getAlliance().get() == Alliance.Red
-                  ? drivetrain.pathfromfile("RedHub").getPoint(0).position
-                  : drivetrain.pathfromfile("BlueHub").getPoint(0).position);
-          shooter.setShooterSpeed((2.6589 * (x * x) + -4.7943 * x + 65.453));
+          //var x = drivetrain.distanceToPose(hubTranslation);
+          shooter.setShooterSpeed(shooterspeed.getDouble(0));
           intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
           intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
         }, shooter, intakeFeeder)).onFalse(

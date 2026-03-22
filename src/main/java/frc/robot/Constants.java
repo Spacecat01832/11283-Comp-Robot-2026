@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import frc.robot.generated.TunerConstants;
 
 public final class Constants {
@@ -26,6 +27,10 @@ public final class Constants {
 
   public static class ShooterConstants {
     public static double kHoodMaxAngle = 45;
+    public static InterpolatingDoubleTreeMap kShooterSpeedMap = new InterpolatingDoubleTreeMap();
+    static {
+      kShooterSpeedMap.put(1.0, 0.0);
+    }
   }
 
   public static class IntakeConstants {
@@ -44,9 +49,4 @@ public final class Constants {
 
 /*
  * shooter hood sparkmax conversion is at 110.7692307692
- * Shooter Speed vs Distance 3-12-2026 as of 2pm
- * A = 2.6756 (x^2 term)
- * B = -3.3779 (x term)
- * C = 61.054 (offset)
- * Formula... speed setting = A*(x^2) + B*x + C
  */
