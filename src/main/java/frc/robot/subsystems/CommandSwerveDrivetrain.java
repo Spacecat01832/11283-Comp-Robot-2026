@@ -22,6 +22,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +32,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -300,6 +302,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+        SmartDashboard.putNumber("angle", angleToPose(pathfromfile("RedHub").getAllPathPoints().get(0).position));
+        SmartDashboard.putNumber("angletru", getState().Pose.getRotation().getDegrees());
+        SmartDashboard.putNumber("distance", distanceToPose(pathfromfile("RedHub").getPathPoses().get(0).getTranslation()));
     }
 
     private void startSimThread() {
@@ -409,7 +414,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     var currentPose = getState().Pose;
     var targetpose  = targetPose;
     double angleToHub = Math.atan2(targetpose.getY() - currentPose.getY(), targetpose.getX() - currentPose.getX());
-    return Math.toDegrees(angleToHub);
+    var angleindeez = Math.toDegrees(angleToHub);
+    return angleindeez > 98 ? 404 : angleindeez < -98 ? 404 : angleindeez;
     }
 
 }

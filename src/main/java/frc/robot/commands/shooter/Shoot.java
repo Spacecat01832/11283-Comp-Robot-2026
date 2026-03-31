@@ -4,12 +4,16 @@
 
 package frc.robot.commands.shooter;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeFeederSubsystem;
@@ -21,18 +25,16 @@ public class Shoot extends Command {
   ShooterSubsystem shooter;
   IntakeFeederSubsystem intake;
   Translation2d hubTranslation;
-  double x, y;
-  PIDController zController = new PIDController(1, 0, 0);
+  PIDController zController = new PIDController(0.5, 0.0001, 0.0015);
+  XboxController controller = new XboxController(OperatorConstants.kDriverControllerPort);
 
   public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake,
-      Translation2d hubTranslation, double x, double y) {
+      Translation2d hubTranslation) {
     addRequirements(drivetrain, shooter);
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     this.intake = intake;
     this.hubTranslation = hubTranslation;
-    this.x = x;
-    this.y = y;
   }
 
   @Override
@@ -42,11 +44,12 @@ public class Shoot extends Command {
   @Override
   public void execute() {
     drivetrain.setControl(new SwerveRequest.FieldCentric()
-        .withRotationalRate(
-            zController.calculate(drivetrain.getState().Pose.getRotation().getDegrees(),
-                drivetrain.angleToPose(hubTranslation)))
-        .withVelocityX(x)
-        .withVelocityY(y));
+        .withRotationalRate(drivetrain.angleToPose(hubTranslation) != 404
+            ? zController.calculate(drivetrain.getState().Pose.getRotation().getDegrees(),
+                drivetrain.angleToPose(hubTranslation))
+            : -controller.getRightX() * DriveConstants.kMaxAngularRate)
+        .withVelocityX(-controller.getLeftY() * DriveConstants.kMaxSpeed)
+        .withVelocityY(-controller.getLeftX() * DriveConstants.kMaxSpeed));
     var x = drivetrain.distanceToPose(hubTranslation);
     shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
     if (shooter.atShooterGoal() && zController.atSetpoint()) {
@@ -61,6 +64,11 @@ public class Shoot extends Command {
     // shooter.setHoodGoal(0.0);
     intake.setIndexer(0.0);
     intake.setFeeder(0.0);
+    drivetrain.setControl(
+        new SwerveRequest.FieldCentric()
+            .withVelocityX(0.0)
+            .withVelocityY(0.0)
+            .withRotationalRate(0.0));
   }
 
   @Override

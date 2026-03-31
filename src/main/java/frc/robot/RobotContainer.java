@@ -51,9 +51,7 @@ public class RobotContainer {
     return new SetIntakePosition(intakeFeeder, position);
   }
 
-  private final Shoot shoot(double x, double y) {
-    return new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation, x, y);
-  }
+  private final Shoot shoot;
 
   private boolean isRed = false;
 
@@ -72,6 +70,8 @@ public class RobotContainer {
     hubTranslation = isRed ? drivetrain.pathfromfile("RedHub").getPoint(0).position
         : drivetrain.pathfromfile("BlueHub").getPoint(0).position;
 
+    shoot = new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation);
+
     // Register commands and configure button bindings.
     registerCommands();
     configureBindings();
@@ -87,7 +87,7 @@ public class RobotContainer {
   private void registerCommands() {
     NamedCommands.registerCommand("IntakeOut", setIntakePosition(IntakeConstants.koutPosition));
     NamedCommands.registerCommand("IntakeIn", setIntakePosition(0));
-    NamedCommands.registerCommand("shoot",shoot(0, 0));
+    NamedCommands.registerCommand("shoot",shoot);
   }
 
   private void configureBindings() {
@@ -128,7 +128,7 @@ public class RobotContainer {
 
     driverController.rightTrigger(0.3).onTrue(
         Commands.run(() -> {
-          shooter.setShooterSpeed(0);
+          shooter.setShooterSpeed(95);
           intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
           intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
         }, shooter, intakeFeeder)).onFalse(
@@ -139,10 +139,10 @@ public class RobotContainer {
             }, shooter, intakeFeeder));
 
     driverController.rightBumper().whileTrue(
-        shoot(driverController.getLeftY(), driverController.getLeftX()))
+        shoot)
         .onFalse(
             Commands.run(() -> {
-              shoot(0, 0).cancel();
+              shoot.end(true);
             }));
   }
 
