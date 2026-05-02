@@ -22,7 +22,6 @@ import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -304,7 +303,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         SmartDashboard.putNumber("angle", angleToPose(pathfromfile("RedHub").getAllPathPoints().get(0).position));
         SmartDashboard.putNumber("angletru", getState().Pose.getRotation().getDegrees());
-        SmartDashboard.putNumber("distance", distanceToPose(pathfromfile("RedHub").getPathPoses().get(0).getTranslation()));
+        SmartDashboard.putNumber("distance",
+                distanceToPose(pathfromfile("RedHub").getPathPoses().get(0).getTranslation()));
     }
 
     private void startSimThread() {
@@ -411,11 +411,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public double angleToPose(Translation2d targetPose) {
-    var currentPose = getState().Pose;
-    var targetpose  = targetPose;
-    double angleToHub = Math.atan2(targetpose.getY() - currentPose.getY(), targetpose.getX() - currentPose.getX());
-    var angleindeez = Math.toDegrees(angleToHub);
-    return angleindeez > 98 ? 404 : angleindeez < -98 ? 404 : angleindeez;
+        var currentPose = getState().Pose;
+        var targetpose = targetPose;
+        double angleToHub = Math.atan2(targetpose.getY() - currentPose.getY(), targetpose.getX() - currentPose.getX());
+        var angleindeez = Math.toDegrees(angleToHub);
+        return angleindeez;
+    }
+
+    public double diferenceofangletopose(Translation2d targetPose) {
+        var currentPose = getState().Pose;
+        double angleToHub = Math.atan2(targetPose.getY() - currentPose.getY(), targetPose.getX() - currentPose.getX());
+        var difference = Math.toDegrees(angleToHub) - currentPose.getRotation().getDegrees();
+        var diff = ((difference + 180) % 360 + 360) % 360 - 180;
+        return -diff;
     }
 
 }

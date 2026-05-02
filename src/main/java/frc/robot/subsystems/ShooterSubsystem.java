@@ -5,11 +5,6 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -17,24 +12,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.MotorIDs;
-import frc.robot.Constants.ShooterConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
 
   private final TalonFX shooterMotor = new TalonFX(MotorIDs.kShooter);
-  private final SparkMax hoodMotor = new SparkMax(MotorIDs.kShooterHood, MotorType.kBrushed);
-  private SparkClosedLoopController hoodPid = hoodMotor.getClosedLoopController();
+  private double shooterSpeed;
 
-  private PIDController ShooterLimiter = new PIDController(
-      0.008,
-      0.0005,
-      0.0001);
+  private PIDController ShooterLimiter = new PIDController(0.004,0.0002,0.0002);
 
-  private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0.01, 0.0098);
+  private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0.011, 0.01);
 
-  
+  // private PIDController ShooterLimiter = new PIDController(0.1794, 0, 0);
+
+  // private SimpleMotorFeedforward shooterFeed = new SimpleMotorFeedforward(0.10183, 0.16698, 0.011862);
 
   public ShooterSubsystem() {
+    shooterSpeed = 0;
     ShooterLimiter.setTolerance(0.4);
     ShooterLimiter.setSetpoint(0);
   }
@@ -42,32 +35,23 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("speed", shooterMotor.getVelocity().getValueAsDouble());
-    shooterMotor.set(
-        ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
-            + shooterFeed.calculate(ShooterLimiter.getSetpoint()));
-  }
-
-  public void setHoodGoal(double angle) {
-    hoodPid.setSetpoint(angle < 1.5
-        ? 1.5
-        : angle > ShooterConstants.kHoodMaxAngle
-            ? ShooterConstants.kHoodMaxAngle
-            : angle, ControlType.kPosition, ClosedLoopSlot.kSlot0);
-  }
-
-  public boolean atHoodGoal() {
-    return hoodPid.isAtSetpoint();
-  }
-
-  public double getHoodPosition() {
-    return hoodMotor.getEncoder().getPosition();
+    if (shooterSpeed == 0) {
+      shooterMotor.set(0);
+    } else {
+      shooterMotor.set(
+          ShooterLimiter.calculate(shooterMotor.getVelocity().getValueAsDouble())
+              + shooterFeed.calculate(ShooterLimiter.getSetpoint()));
+      if (shooterMotor.getVelocity().getValueAsDouble() < shooterSpeed - 3) {
+        ShooterLimiter.setSetpoint(shooterSpeed + 5);
+      }
+    }
   }
 
   public void setShooterSpeed(double speed) {
-    ShooterLimiter.setSetpoint(speed);
+    shooterSpeed = speed;
   }
 
-public boolean atShooterGoal() {
-  return ShooterLimiter.atSetpoint();
-}
+  public boolean atShooterGoal() {
+    return ShooterLimiter.atSetpoint();
+  }
 }

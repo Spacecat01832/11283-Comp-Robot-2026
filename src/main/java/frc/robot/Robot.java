@@ -12,11 +12,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.subsystems.IntakeFeederSubsystem;
 
 public class Robot extends TimedRobot {
 
   private static Robot instance;
   private Command m_autonomousCommand;
+
+  private IntakeFeederSubsystem intake;
 
   private RobotContainer m_robotContainer;
 
@@ -53,13 +57,15 @@ public class Robot extends TimedRobot {
     if (isSimulation()) {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
+
+    intake = m_robotContainer.intakeFeeder;
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    if (kUseLimelight) {
+    if (kUseLimelight && intake.getIntakeFlopperPosition() < IntakeConstants.koutPosition + 0.1) {
       var driveState = m_robotContainer.drivetrain.getState();
       double headingDeg = driveState.Pose.getRotation().getDegrees();
       double omegaRps = Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond);

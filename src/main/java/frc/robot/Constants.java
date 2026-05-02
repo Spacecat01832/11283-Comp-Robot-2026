@@ -11,39 +11,38 @@ import frc.robot.generated.TunerConstants;
 
 public final class Constants {
   public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0,
-        kButtonControllerPort = 1;
+    public static final int kDriverControllerPort = 0;
   }
 
   public static class MotorIDs {
-    public static final int kShooter = 1,
-        kShooterHood = 2,
-        kIndexer = 3,
-        kFeeder = 4,
-        kIntake = 5,
-        kIntakeFlopper = 6;
+    public static final int kShooter = 1;
+    public static final int kIndexer = 3;
+    public static final int kFeeder = 4;
+    public static final int kIntake = 5;
+    public static final int kIntakeFlopper = 6;
 
   }
 
   public static class ShooterConstants {
-    public static double kHoodMaxAngle = 45;
     public static InterpolatingDoubleTreeMap kShooterSpeedMap = new InterpolatingDoubleTreeMap();
     static {
-      kShooterSpeedMap.put(1.0, 0.0);
+      kShooterSpeedMap.put(2.0, 57.0);
+      kShooterSpeedMap.put(3.0, 65.0);
+      kShooterSpeedMap.put(4.0, 95.0);
     }
   }
 
   public static class IntakeConstants {
-    public static double kIntakeSpeed = -0.9,
-        kIntakeFlopperMaxSpeed = 0.5,
-        kFeederSpeed = 0.8,
-        kIndexerSpeed = 3000,
-        koutPosition = -1.7;
+    public static double kIntakeSpeed = 0.75;
+    public static double kFeederSpeed = 1;
+    public static double kIndexerSpeed = 1;
+    public static double koutPosition = -1;
+    public static double kIntakePoSpeed = 0.5;
   }
 
   public static class DriveConstants {
-    public static double kMaxSpeed = 0.48 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-        kMaxAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
+    public static double kMaxSpeed = 0.48 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    public static double kMaxAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
   }
 }
 

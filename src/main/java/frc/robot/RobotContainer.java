@@ -7,20 +7,19 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.Constants.*;
 import frc.robot.commands.intakeFeeder.*;
@@ -30,13 +29,13 @@ import frc.robot.subsystems.*;
 
 public class RobotContainer {
 
-  final CommandXboxController driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  final CommandPS5Controller driverController = new CommandPS5Controller(OperatorConstants.kDriverControllerPort);
   // final CommandXboxController buttonController = new
   // CommandXboxController(OperatorConstants.kButtonControllerPort);
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(DriveConstants.kMaxSpeed * 0.2).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.2)
+      .withDeadband(DriveConstants.kMaxSpeed * 0.1).withRotationalDeadband(DriveConstants.kMaxAngularRate * 0.1)
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -44,50 +43,40 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(DriveConstants.kMaxSpeed);
 
   public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private final ShooterSubsystem shooter = new ShooterSubsystem();
-  private final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
+  public final ShooterSubsystem shooter = new ShooterSubsystem();
+  public final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
 
   private final SetIntakePosition setIntakePosition(double position) {
     return new SetIntakePosition(intakeFeeder, position);
   }
 
-  private final Shoot shoot;
+  private final SetIntakeSpeed setIntakeSpeed(double speed) {
+    return new SetIntakeSpeed(intakeFeeder, speed);
+  }
 
-  private boolean isRed = false;
+  private final Shoot shoot(Translation2d hub) {
+    return new Shoot(drivetrain, shooter, intakeFeeder, hub);
+  }
 
-  private Translation2d hubTranslation = new Translation2d(0, 0);
+  public Translation2d hubposition = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+      ? drivetrain.pathfromfile("RedHub").getAllPathPoints().get(0).position
+      : drivetrain.pathfromfile("BlueHub").getAllPathPoints().get(0).position;
 
   public SendableChooser<Command> AutoChooser;
 
-  public NetworkTable tbl = NetworkTableInstance.getDefault().getTable("robot");
-
-  public NetworkTableEntry shooterspeed;
-
   public RobotContainer() {
-    // Determine alliance and hub translation first so commands that depend on
-    // them can be constructed before binding buttons.
-    isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-    hubTranslation = isRed ? drivetrain.pathfromfile("RedHub").getPoint(0).position
-        : drivetrain.pathfromfile("BlueHub").getPoint(0).position;
-
-    shoot = new Shoot(drivetrain, shooter, intakeFeeder, hubTranslation);
-
-    // Register commands and configure button bindings.
     registerCommands();
     configureBindings();
-
-    // Build the auto chooser (uses any registered NamedCommands)
     AutoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("AutoChooser", AutoChooser);
-
-    shooterspeed = tbl.getEntry("shooterspeed");
-    shooterspeed.setDouble(0);
   }
 
   private void registerCommands() {
     NamedCommands.registerCommand("IntakeOut", setIntakePosition(IntakeConstants.koutPosition));
-    NamedCommands.registerCommand("IntakeIn", setIntakePosition(0));
-    NamedCommands.registerCommand("shoot",shoot);
+    NamedCommands.registerCommand("IntakeIn", setIntakePosition(0.0));
+    NamedCommands.registerCommand("Intake", setIntakeSpeed(IntakeConstants.kIntakeSpeed));
+    NamedCommands.registerCommand("Intakeoff", setIntakeSpeed(0));
+    NamedCommands.registerCommand("shoot", shoot(hubposition));
   }
 
   private void configureBindings() {
@@ -105,8 +94,8 @@ public class RobotContainer {
     RobotModeTriggers.disabled().whileTrue(
         drivetrain.applyRequest(() -> idle).ignoringDisable(true));
 
-    driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    driverController.b().whileTrue(
+    driverController.cross().whileTrue(drivetrain.applyRequest(() -> brake));
+    driverController.circle().whileTrue(
         drivetrain.applyRequest(() -> point
             .withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))));
 
@@ -118,32 +107,40 @@ public class RobotContainer {
     // joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     // Reset the field-centric heading on left bumper press.
-    driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+    driverController.options().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
     drivetrain.registerTelemetry(logger::telemeterize);
 
-    driverController.leftBumper()
-        .onTrue(setIntakePosition(IntakeConstants.koutPosition))
-        .onFalse(setIntakePosition(0));
+    driverController.L1()
+        .onTrue(setIntakePosition(0.0))
+        .onFalse(setIntakePosition(IntakeConstants.koutPosition));
 
-    driverController.rightTrigger(0.3).onTrue(
-        Commands.run(() -> {
-          shooter.setShooterSpeed(95);
-          intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
-          intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
-        }, shooter, intakeFeeder)).onFalse(
-            Commands.run(() -> {
-              shooter.setShooterSpeed(0);
-              intakeFeeder.setIndexer(0);
-              intakeFeeder.setFeeder(0);
-            }, shooter, intakeFeeder));
-
-    driverController.rightBumper().whileTrue(
-        shoot)
+    driverController.L2()
+        .onTrue(
+            setIntakeSpeed(IntakeConstants.kIntakeSpeed))
         .onFalse(
-            Commands.run(() -> {
-              shoot.end(true);
-            }));
+            setIntakeSpeed(0.0));
+
+    driverController.R2()
+        .onTrue(Commands.run(() -> {
+          var timer = new Timer();
+          timer.start();
+          timer.reset();
+          shooter.setShooterSpeed(60);
+          if (timer.get() > 0.8) {
+            intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+            intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+          }
+        }, shooter, intakeFeeder))
+        .onFalse(Commands.run(() -> {
+          shooter.setShooterSpeed(0);
+          intakeFeeder.setIndexer(0);
+          intakeFeeder.setFeeder(0);
+        }, shooter, intakeFeeder));
+
+    driverController.R1()
+        .whileTrue(
+            shoot(hubposition));
   }
 
   public Command getAutonomousCommand() {

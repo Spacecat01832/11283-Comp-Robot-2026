@@ -8,11 +8,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeFeederSubsystem;
@@ -20,12 +18,12 @@ import frc.robot.subsystems.ShooterSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Shoot extends Command {
-  CommandSwerveDrivetrain drivetrain;
-  ShooterSubsystem shooter;
-  IntakeFeederSubsystem intake;
-  Translation2d hubTranslation;
-  PIDController zController = new PIDController(0.5, 0.0001, 0.0015);
-  XboxController controller = new XboxController(OperatorConstants.kDriverControllerPort);
+  private CommandSwerveDrivetrain drivetrain;
+  private ShooterSubsystem shooter;
+  private IntakeFeederSubsystem intake;
+  private Translation2d hubTranslation;
+  private PIDController zController = new PIDController(0.5, 0.00002, 0.0023);
+  private Timer tim = new Timer();
 
   public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake,
       Translation2d hubTranslation) {
@@ -38,36 +36,29 @@ public class Shoot extends Command {
 
   @Override
   public void initialize() {
+    tim.start();
+    tim.reset();
   }
 
   @Override
   public void execute() {
     drivetrain.setControl(new SwerveRequest.FieldCentric()
-        .withRotationalRate(drivetrain.angleToPose(hubTranslation) != 404
-            ? zController.calculate(drivetrain.getState().Pose.getRotation().getDegrees(),
-                drivetrain.angleToPose(hubTranslation))
-            : -controller.getRightX() * DriveConstants.kMaxAngularRate)
-        .withVelocityX(-controller.getLeftY() * DriveConstants.kMaxSpeed)
-        .withVelocityY(-controller.getLeftX() * DriveConstants.kMaxSpeed));
-    var x = drivetrain.distanceToPose(hubTranslation);
-    shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
-    if (shooter.atShooterGoal() && zController.atSetpoint()) {
+        .withRotationalRate(zController.calculate(drivetrain.diferenceofangletopose(hubTranslation), 0)));
+    double x = drivetrain.distanceToPose(hubTranslation);
+    if (tim.get() > 0.8) {
+      shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
       intake.setFeeder(IntakeConstants.kFeederSpeed);
+    } else {
+      shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x) + 5);
     }
   }
 
   @Override
   public void end(boolean interrupted) {
     shooter.setShooterSpeed(0.0);
-    // shooter.setHoodGoal(0.0);
     intake.setIndexer(0.0);
     intake.setFeeder(0.0);
-    drivetrain.setControl(
-        new SwerveRequest.FieldCentric()
-            .withVelocityX(0.0)
-            .withVelocityY(0.0)
-            .withRotationalRate(0.0));
   }
 
   @Override
