@@ -4,6 +4,8 @@
 
 package frc.robot.commands.shooter;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -22,16 +24,17 @@ public class Shoot extends Command {
   private ShooterSubsystem shooter;
   private IntakeFeederSubsystem intake;
   private Translation2d hubTranslation;
+  private Supplier<Translation2d> hubTranslationSupplier;
   private PIDController zController = new PIDController(0.5, 0.00002, 0.0023);
   private Timer tim = new Timer();
 
   public Shoot(CommandSwerveDrivetrain drivetrain, ShooterSubsystem shooter, IntakeFeederSubsystem intake,
-      Translation2d hubTranslation) {
+      Supplier<Translation2d> hubTranslation) {
     addRequirements(drivetrain, shooter);
     this.drivetrain = drivetrain;
     this.shooter = shooter;
     this.intake = intake;
-    this.hubTranslation = hubTranslation;
+    this.hubTranslationSupplier = hubTranslation;
   }
 
   @Override
@@ -42,6 +45,7 @@ public class Shoot extends Command {
 
   @Override
   public void execute() {
+    hubTranslation = hubTranslationSupplier.get();
     drivetrain.setControl(new SwerveRequest.FieldCentric()
         .withRotationalRate(zController.calculate(drivetrain.diferenceofangletopose(hubTranslation), 0)));
     double x = drivetrain.distanceToPose(hubTranslation);
@@ -49,7 +53,9 @@ public class Shoot extends Command {
       shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
       intake.setIndexer(IntakeConstants.kIndexerSpeed);
       intake.setFeeder(IntakeConstants.kFeederSpeed);
-    } else {
+    // } else if (tim.get() > 0.5){
+    //   shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x));
+    }else {
       shooter.setShooterSpeed(ShooterConstants.kShooterSpeedMap.get(x) + 5);
     }
   }

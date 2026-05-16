@@ -5,12 +5,12 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.*;
 
@@ -20,7 +20,8 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   private double intakespeed;
 
   private SparkMax IntakeFlopperMotor = new SparkMax(MotorIDs.kIntakeFlopper, MotorType.kBrushless);
-  // private boolean floppersetpoint;
+  private boolean floppersetpoint;
+  private Timer flopperTimer = new Timer();
 
   private SparkMax feederMotor = new SparkMax(MotorIDs.kFeeder, MotorType.kBrushless);
   private double feedspeed;
@@ -31,7 +32,8 @@ public class IntakeFeederSubsystem extends SubsystemBase {
   private SparkClosedLoopController flopperPID = IntakeFlopperMotor.getClosedLoopController();
 
   public IntakeFeederSubsystem() {
-    flopperPID.setSetpoint(0, ControlType.kPosition);
+    flopperTimer.start();
+    floppersetpoint = false;
     feedspeed = 0;
     indexspeed = 0;
     intakespeed = 0;
@@ -39,18 +41,46 @@ public class IntakeFeederSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // IntakeFlopperMotor.set(
-    // floppersetpoint
-    // ? IntakeFlopperMotor.getEncoder().getPosition() >
-    // IntakeConstants.koutPosition + 0.1
-    // ? -IntakeConstants.kIntakePoSpeed + 0.25
-    // : 0
-    // : IntakeFlopperMotor.getEncoder().getPosition() < -0.1
-    // ? 1
-    // : 0);
+    IntakeFlopperMotor.setVoltage(cuspid(
+        IntakeFlopperMotor.getEncoder().getPosition(),
+        floppersetpoint,
+        flopperTimer.get()));
     IntakeMotor.set(intakespeed);
     feederMotor.set(feedspeed);
     indexMotor.set(indexspeed);
+  }
+
+  private double cuspid(double current, boolean out, double timer_value) {
+    double voltage = 0.0;
+
+    var holdkick = 12;
+    var holdcruse = 2.5;
+    var outkick = -3.0;
+    var outcruse = -1.6;
+    var kicktime = 0.2;
+    if (out) {
+      voltage = timer_value < kicktime ? outkick : outcruse;
+    } else {
+      voltage = timer_value < kicktime ? holdkick : holdcruse;
+    }
+
+    var target = out ? IntakeConstants.koutPosition : 0.0;
+    var error = target - current;
+    var abs_error = Math.abs(error);
+    var error_range = 0.4;
+    if (abs_error < error_range) {
+      double scale = MathUtil.clamp(abs_error / error_range, 0.2, out ? outcruse : holdcruse);
+      voltage *= scale;
+    }
+
+    var tolerance = 0.1;
+    if (out
+        ? error > -tolerance
+        : error < tolerance) {
+      voltage = 0;
+    }
+
+    return voltage;
   }
 
   public void setFeeder(double speed) {
@@ -65,18 +95,10 @@ public class IntakeFeederSubsystem extends SubsystemBase {
     indexspeed = speed;
   }
 
-  public void setIntakeFlopper(double position) {
-    flopperPID.setSetpoint(position > 0
-        ? 0
-        : position < IntakeConstants.koutPosition
-            ? IntakeConstants.koutPosition
-            : position,
-        ControlType.kPosition, ClosedLoopSlot.kSlot0);
+  public void setIntakeFlopper(boolean out) {
+    flopperTimer.reset();
+    floppersetpoint = out;
   }
-
-  // public void setIntakeFlopper(boolean out) {
-  // floppersetpoint = out;
-  // }
 
   public double getIntakeFlopperPosition() {
     return IntakeFlopperMotor.getEncoder().getPosition();

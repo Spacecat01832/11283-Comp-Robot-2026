@@ -8,6 +8,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -46,21 +48,25 @@ public class RobotContainer {
   public final ShooterSubsystem shooter = new ShooterSubsystem();
   public final IntakeFeederSubsystem intakeFeeder = new IntakeFeederSubsystem();
 
-  private final SetIntakePosition setIntakePosition(double position) {
-    return new SetIntakePosition(intakeFeeder, position);
+  public Timer timer = new Timer();
+
+  private final SetIntakePosition setIntakePosition(boolean out) {
+    return new SetIntakePosition(intakeFeeder, out);
   }
 
   private final SetIntakeSpeed setIntakeSpeed(double speed) {
     return new SetIntakeSpeed(intakeFeeder, speed);
   }
 
-  private final Shoot shoot(Translation2d hub) {
+  private final Shoot shoot(Supplier<Translation2d> hub) {
     return new Shoot(drivetrain, shooter, intakeFeeder, hub);
   }
 
-  public Translation2d hubposition = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
-      ? drivetrain.pathfromfile("RedHub").getAllPathPoints().get(0).position
-      : drivetrain.pathfromfile("BlueHub").getAllPathPoints().get(0).position;
+  private Translation2d hubposition() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red
+        ? drivetrain.pathfromfile("RedHub").getAllPathPoints().get(0).position
+        : drivetrain.pathfromfile("BlueHub").getAllPathPoints().get(0).position;
+  }
 
   public SendableChooser<Command> AutoChooser;
 
@@ -72,11 +78,11 @@ public class RobotContainer {
   }
 
   private void registerCommands() {
-    NamedCommands.registerCommand("IntakeOut", setIntakePosition(IntakeConstants.koutPosition));
-    NamedCommands.registerCommand("IntakeIn", setIntakePosition(0.0));
+    NamedCommands.registerCommand("IntakeOut", setIntakePosition(true));
+    NamedCommands.registerCommand("IntakeIn", setIntakePosition(false));
     NamedCommands.registerCommand("Intake", setIntakeSpeed(IntakeConstants.kIntakeSpeed));
     NamedCommands.registerCommand("Intakeoff", setIntakeSpeed(0));
-    NamedCommands.registerCommand("shoot", shoot(hubposition));
+    NamedCommands.registerCommand("shoot", shoot(this::hubposition));
   }
 
   private void configureBindings() {
@@ -112,8 +118,8 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     driverController.L1()
-        .onTrue(setIntakePosition(0.0))
-        .onFalse(setIntakePosition(IntakeConstants.koutPosition));
+        .onTrue(setIntakePosition(false))
+        .onFalse(setIntakePosition(true));
 
     driverController.L2()
         .onTrue(
@@ -123,14 +129,10 @@ public class RobotContainer {
 
     driverController.R2()
         .onTrue(Commands.run(() -> {
-          var timer = new Timer();
-          timer.start();
-          timer.reset();
-          shooter.setShooterSpeed(60);
-          if (timer.get() > 0.8) {
-            intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
-            intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
-          }
+          shooter.setShooterSpeed(70);
+          intakeFeeder.setIndexer(IntakeConstants.kIndexerSpeed);
+          intakeFeeder.setFeeder(IntakeConstants.kFeederSpeed);
+
         }, shooter, intakeFeeder))
         .onFalse(Commands.run(() -> {
           shooter.setShooterSpeed(0);
@@ -140,7 +142,7 @@ public class RobotContainer {
 
     driverController.R1()
         .whileTrue(
-            shoot(hubposition));
+            shoot(this::hubposition));
   }
 
   public Command getAutonomousCommand() {

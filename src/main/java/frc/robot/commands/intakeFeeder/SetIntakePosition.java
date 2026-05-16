@@ -10,17 +10,17 @@ import frc.robot.subsystems.IntakeFeederSubsystem;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SetIntakePosition extends Command {
   private IntakeFeederSubsystem intake;
-  private double position;
-  public SetIntakePosition(IntakeFeederSubsystem intake, double position) {
+  private boolean out;
+  public SetIntakePosition(IntakeFeederSubsystem intake, boolean out) {
     addRequirements(intake);
     this.intake = intake;
-    this.position = position;
+    this.out = out;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    intake.setIntakeFlopper(position);
+    intake.setIntakeFlopper(out);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -30,7 +30,7 @@ public class SetIntakePosition extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    intake.setIntakeFlopper(position);
+    intake.setIntakeFlopper(out);
   }
 
   // Returns true when the command should end.

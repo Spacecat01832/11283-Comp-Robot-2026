@@ -26,9 +26,13 @@ public final class Constants {
   public static class ShooterConstants {
     public static InterpolatingDoubleTreeMap kShooterSpeedMap = new InterpolatingDoubleTreeMap();
     static {
-      kShooterSpeedMap.put(2.0, 57.0);
-      kShooterSpeedMap.put(3.0, 65.0);
-      kShooterSpeedMap.put(4.0, 95.0);
+      kShooterSpeedMap.put(2.0, 56.5);
+      kShooterSpeedMap.put(2.5, 63.0);
+      kShooterSpeedMap.put(3.0, 65.5);
+      kShooterSpeedMap.put(3.2, 70.0);
+      kShooterSpeedMap.put(3.5, 76.0);
+      kShooterSpeedMap.put(3.8, 79.5);
+      kShooterSpeedMap.put(4.0, 85.0);
     }
   }
 
@@ -41,8 +45,8 @@ public final class Constants {
   }
 
   public static class DriveConstants {
-    public static double kMaxSpeed = 0.48 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-    public static double kMaxAngularRate = RotationsPerSecond.of(1.5).in(RadiansPerSecond);
+    public static double kMaxSpeed = 0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    public static double kMaxAngularRate = RotationsPerSecond.of(2).in(RadiansPerSecond);
   }
 }
 
